@@ -8,7 +8,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 //Adding DataAccess service
-builder.Services.AddSingleton<DataAccess>();
+builder.Services.AddSingleton<IDataAccess, DataAccess>();
 
 var app = builder.Build();
 
@@ -30,5 +30,3 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
-
-//22:00
