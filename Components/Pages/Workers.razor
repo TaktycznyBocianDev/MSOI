@@ -8,7 +8,9 @@
 
 <h3>Workers</h3>
 
-<button class="btn btn-primary" @onclick="InsertData">Click me</button>
+<button class="btn btn-primary" @onclick="InsertData">Add</button>
+<button class="btn btn-warning" @onclick="UpdateData">Update</button>
+<button class="btn btn-danger" @onclick="DeleteData">Delete</button>
 
 @if (workers == null)
 {
@@ -18,7 +20,7 @@ else
 {
     @foreach (var worker in workers)
     {
-        <p>@worker.Worker_name @worker.Pesel @worker.Employment_date </p>
+        <p>@worker.Worker_name @worker.Worker_surname @worker.Pesel @worker.Employment_date </p>
     }
 }
 
@@ -33,11 +35,26 @@ else
         workers = await _data.LoadData<WorkerModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
     }
 
+    private async Task UpdateData()
+    {
+        string sql = "UPDATE workers SET worker_surname = @surname WHERE id = @id;";
+        await _data.LoadData<WorkerModel, dynamic>(sql, new {Surname = "Kamilion", id = 4 }, _config.GetConnectionString("default"));
+        await OnInitializedAsync();
+    }
+
+    private async Task DeleteData()
+    {
+        string sql = "DELETE FROM workers WHERE worker_surname = @worker_surname;";
+        await _data.LoadData<WorkerModel, dynamic>(sql, new { worker_surname = "Budowniczy" }, _config.GetConnectionString("default"));
+        await OnInitializedAsync();
+    }
+
+
     private async Task InsertData()
     {
         string sql = "INSERT INTO workers (worker_name, worker_surname, position, employment_date, pesel) VALUES (@worker_name, @worker_surname, @position, @employment_date, @pesel);";
         await _data.SaveData(sql, new { worker_name = "Bob", worker_surname = "Budowniczy", position = "Magazynier", employment_date = "2020-01-02", pesel = "90051902034" }, _config.GetConnectionString("default"));
-
+        await OnInitializedAsync();
     }
 
 }
