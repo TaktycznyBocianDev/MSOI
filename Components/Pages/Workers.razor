@@ -1,11 +1,33 @@
 ﻿@page "/workers"
 
 @using DataLibrary
+@using MSOI.Models
 @inject IDataAccess _data
+@inject IConfiguration _config
 
 
 <h3>Workers</h3>
+@if (workers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @foreach (var worker in workers)
+    {
+        <p>@worker.Worker_name @worker.Pesel </p>
+    }
+}
 
 @code {
+
+    List<WorkerModel> workers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string sql = "SELECT * FROM workers";
+
+        workers = await _data.LoadData<WorkerModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+    }
 
 }
