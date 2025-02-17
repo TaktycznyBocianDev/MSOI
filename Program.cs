@@ -1,5 +1,6 @@
 using MSOI.Components;
-using DataLibrary; //adding using statement
+using DataLibrary;
+using MSOI.Services; //adding using statement
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddRazorComponents()
 
 //Adding DataAccess service
 builder.Services.AddSingleton<IDataAccess, DataAccess>();
+builder.Services.AddScoped<WorkerService>();
 
 var app = builder.Build();
 
