@@ -1,0 +1,151 @@
+﻿@page "/item-types"
+@using MSOI.Models
+@using MSOI.Services
+@inject ItemTypeService ItemTypeService
+
+<h3>Typy Przedmiotów</h3>
+
+<!-- Przycisk do odświeżenia listy typów przedmiotów -->
+<button class="btn btn-primary" @onclick="LoadItemTypes">Odśwież listę</button>
+
+<hr />
+
+<h4>Dodaj nowy typ przedmiotu</h4>
+<div class="mb-3">
+    <input placeholder="Nazwa przedmiotu" @bind="newItemType.Item_name" class="form-control mb-2" />
+    <input type="number" placeholder="Domyślny okres wymiany" @bind="newItemType.Default_replacement_period" class="form-control mb-2" />
+    <input placeholder="Opis przedmiotu" @bind="newItemType.Item_description" class="form-control mb-2" />
+    <button class="btn btn-success" @onclick="InsertItemType">Dodaj</button>
+</div>
+
+<hr />
+
+<h4>Lista typów przedmiotów</h4>
+@if (itemTypes == null)
+{
+    <p><em>Ładowanie...</em></p>
+}
+else if (!itemTypes.Any())
+{
+    <p>Brak typów przedmiotów w bazie.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nazwa</th>
+                <th>Domyślny okres wymiany</th>
+                <th>Opis</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var itemType in itemTypes)
+            {
+                <tr>
+                    <td>@itemType.Id</td>
+                    <td>@itemType.Item_name</td>
+                    <td>@itemType.Default_replacement_period</td>
+                    <td>@itemType.Item_description</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="@(() => EditItemType(itemType))">Edytuj</button>
+                        <button class="btn btn-danger btn-sm" @onclick="@(() => DeleteItemType(itemType))">Usuń</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (editingItemType != null)
+{
+    <hr />
+    <h4>Edycja typu przedmiotu</h4>
+    <div class="mb-3">
+        <input placeholder="Nazwa przedmiotu" @bind="editingItemType.Item_name" class="form-control mb-2" />
+        <input type="number" placeholder="Domyślny okres wymiany" @bind="editingItemType.Default_replacement_period" class="form-control mb-2" />
+        <input placeholder="Opis przedmiotu" @bind="editingItemType.Item_description" class="form-control mb-2" />
+        <button class="btn btn-success" @onclick="UpdateItemType">Aktualizuj</button>
+        <button class="btn btn-secondary" @onclick="CancelEdit">Anuluj</button>
+    </div>
+}
+
+@code {
+    List<ItemTypeModel> itemTypes;
+    ItemTypeModel newItemType = new ItemTypeModel();
+    ItemTypeModel editingItemType;
+    string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItemTypes();
+    }
+
+    async Task LoadItemTypes()
+    {
+        itemTypes = await ItemTypeService.GetItemTypes();
+    }
+
+    async Task InsertItemType()
+    {
+        bool success = await ItemTypeService.InsertData(newItemType);
+        if (success)
+        {
+            newItemType = new ItemTypeModel(); // czyścimy formularz
+            await LoadItemTypes();
+        }
+    }
+
+    void EditItemType(ItemTypeModel itemType)
+    {
+        editingItemType = new ItemTypeModel
+            {
+                Id = itemType.Id,
+                Item_name = itemType.Item_name,
+                Default_replacement_period = itemType.Default_replacement_period,
+                Item_description = itemType.Item_description
+            };
+    }
+
+    async Task UpdateItemType()
+    {
+        bool success = await ItemTypeService.UpdateData(
+            editingItemType.Id,
+            editingItemType.Item_name,
+            editingItemType.Default_replacement_period,
+            editingItemType.Item_description);
+        if (success)
+        {
+            editingItemType = null;
+            await LoadItemTypes();
+        }
+    }
+
+    async Task DeleteItemType(ItemTypeModel itemType)
+    {
+        try
+        {
+            bool success = await ItemTypeService.DeleteData(itemType);
+            if (success)
+            {
+                await LoadItemTypes();
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    void CancelEdit()
+    {
+        editingItemType = null;
+    }
+}

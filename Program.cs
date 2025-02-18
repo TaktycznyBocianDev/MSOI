@@ -11,6 +11,7 @@ builder.Services.AddRazorComponents()
 //Adding DataAccess service
 builder.Services.AddSingleton<IDataAccess, DataAccess>();
 builder.Services.AddScoped<WorkerService>();
+builder.Services.AddScoped<ItemTypeService>();
 
 var app = builder.Build();
 
