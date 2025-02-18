@@ -1,39 +1,165 @@
 ﻿@page "/workers"
-
-@using DataLibrary
 @using MSOI.Models
 @using MSOI.Services
-@inject WorkerService _workerService
-
+@inject WorkerService WorkerService
 
 <h3>Workers</h3>
 
-@* <button class="btn btn-primary" @onclick="InsertData">Add</button> *@
-@* <button class="btn btn-warning" @onclick="UpdateData">Update</button>
-<button class="btn btn-danger" @onclick="DeleteData">Delete</button> *@
+<!-- Przycisk do odświeżenia listy pracowników -->
+<button class="btn btn-primary" @onclick="LoadWorkers">Odśwież listę</button>
 
+<hr />
+
+<h4>Dodaj nowego pracownika</h4>
+<div class="mb-3">
+    <input placeholder="Imię" @bind="newWorker.Worker_name" class="form-control mb-2" />
+    <input placeholder="Nazwisko" @bind="newWorker.Worker_surname" class="form-control mb-2" />
+    <input placeholder="Stanowisko" @bind="newWorker.Position" class="form-control mb-2" />
+    <input type="date" @bind="newWorker.Employment_date" class="form-control mb-2" />
+    <input placeholder="Pesel" @bind="newWorker.Pesel" class="form-control mb-2" />
+    <button class="btn btn-success" @onclick="InsertWorker">Dodaj</button>
+</div>
+
+<hr />
+
+<h4>Lista pracowników</h4>
 @if (workers == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Ładowanie...</em></p>
+}
+else if (!workers.Any())
+{
+    <p>Brak pracowników w bazie.</p>
 }
 else
 {
-    @foreach (var worker in workers)
-    {
-        <p>@worker.Worker_name @worker.Worker_surname @worker.Pesel @worker.Employment_date </p>
-    }
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Imię</th>
+                <th>Nazwisko</th>
+                <th>Stanowisko</th>
+                <th>Data zatrudnienia</th>
+                <th>Pesel</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var worker in workers)
+            {
+                <tr>
+                    <td>@worker.Id</td>
+                    <td>@worker.Worker_name</td>
+                    <td>@worker.Worker_surname</td>
+                    <td>@worker.Position</td>
+                    <td>@worker.Employment_date.ToShortDateString()</td>
+                    <td>@worker.Pesel</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="@(() => EditWorker(worker))">Edytuj</button>
+                        <button class="btn btn-danger btn-sm" @onclick="@(() => DeleteWorker(worker))">Usuń</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (editingWorker != null)
+{
+    <hr />
+    <h4>Edycja pracownika</h4>
+    <div class="mb-3">
+        <input placeholder="Imię" @bind="editingWorker.Worker_name" class="form-control mb-2" />
+        <input placeholder="Nazwisko" @bind="editingWorker.Worker_surname" class="form-control mb-2" />
+        <input placeholder="Stanowisko" @bind="editingWorker.Position" class="form-control mb-2" />
+        <input type="date" @bind="editingWorker.Employment_date" class="form-control mb-2" />
+        <input placeholder="Pesel" @bind="editingWorker.Pesel" class="form-control mb-2" />
+        <button class="btn btn-success" @onclick="UpdateWorker">Aktualizuj</button>
+        <button class="btn btn-secondary" @onclick="CancelEdit">Anuluj</button>
+    </div>
 }
 
 @code {
-
     List<WorkerModel> workers;
+    WorkerModel newWorker = new WorkerModel();
+    WorkerModel editingWorker;
+    string errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        workers = await _workerService.GetWorkers();
+        await LoadWorkers();
     }
 
-    
+    async Task LoadWorkers()
+    {
+        workers = await WorkerService.GetWorkers();
+    }
 
+    async Task InsertWorker()
+    {
+        bool success = await WorkerService.InsertData(newWorker);
+        if (success)
+        {
+            newWorker = new WorkerModel(); // czyścimy formularz
+            await LoadWorkers();
+        }
+    }
+
+    void EditWorker(WorkerModel worker)
+    {
+        // Tworzymy kopię pracownika do edycji, aby nie zmieniać bezpośrednio listy
+        editingWorker = new WorkerModel
+            {
+                Id = worker.Id,
+                Worker_name = worker.Worker_name,
+                Worker_surname = worker.Worker_surname,
+                Position = worker.Position,
+                Employment_date = worker.Employment_date,
+                Pesel = worker.Pesel
+            };
+    }
+
+    async Task UpdateWorker()
+    {
+        // Używamy metody UpdateData; przekazujemy wszystkie pola z edytowanego obiektu
+        bool success = await WorkerService.UpdateData(
+            editingWorker.Id,
+            editingWorker.Worker_name,
+            editingWorker.Worker_surname,
+            editingWorker.Position,
+            editingWorker.Employment_date,
+            editingWorker.Pesel);
+        if (success)
+        {
+            editingWorker = null;
+            await LoadWorkers();
+        }
+    }
+
+    async Task DeleteWorker(WorkerModel worker)
+    {
+        try
+        {
+            bool success = await WorkerService.DeleteData(worker);
+            if (success)
+            {
+                await LoadWorkers();
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    void CancelEdit()
+    {
+        editingWorker = null;
+    }
 }
-
