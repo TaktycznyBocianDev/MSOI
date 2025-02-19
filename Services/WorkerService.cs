@@ -20,11 +20,12 @@ namespace MSOI.Services
             _connection = connection.GetConnectionString("default");
         }
 
-        public async Task<List<WorkerModel>> GetWorkers(string? name = null, string? surname = null, string? position = null, DateTime? employment_date = null, string? pesel = null)
+        public async Task<List<WorkerModel>> GetWorkers(int? id = null, string? name = null, string? surname = null, string? position = null, DateTime? employment_date = null, string? pesel = null)
         {
             var parameters = new DynamicParameters();
             var sql = new StringBuilder("SELECT * FROM workers WHERE 1=1");
 
+            if (id != null) { sql.Append(" AND id LIKE @id"); parameters.Add("id", $"{id}"); }
             if (!string.IsNullOrWhiteSpace(name)) { sql.Append(" AND worker_name LIKE @name"); parameters.Add("name", $"%{name}%"); }
             if (!string.IsNullOrWhiteSpace(surname)) { sql.Append(" AND worker_surname LIKE @surname"); parameters.Add("surname", $"%{surname}%"); }
             if (!string.IsNullOrWhiteSpace(position)) { sql.Append(" AND position LIKE @position"); parameters.Add("position", $"%{position}%"); }

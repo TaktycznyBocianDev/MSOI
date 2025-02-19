@@ -21,11 +21,12 @@ namespace MSOI.Services
         }
 
 
-        public async Task<List<ItemTypeModel>> GetItemTypes(string? item_name = null, int? default_replacement_period = null, string? item_description = null)
+        public async Task<List<ItemTypeModel>> GetItemTypes(int? id = null, string? item_name = null, int? default_replacement_period = null, string? item_description = null)
         {
             var parameters = new DynamicParameters();
             var sql = new StringBuilder("SELECT * FROM item_type WHERE 1=1");
 
+            if (id != null) { sql.Append(" AND id LIKE @id"); parameters.Add("id", $"{id}"); }
             if (!string.IsNullOrEmpty(item_name)) { sql.Append(" AND item_name LIKE @item_name"); parameters.Add("item_name", $"%{item_name}%"); }
             if (default_replacement_period != null) { sql.Append(" AND default_replacement_period LIKE @default_replacement_period"); parameters.Add("default_replacement_period", $"{default_replacement_period}"); }
             if (!string.IsNullOrEmpty(item_name)) { sql.Append(" AND item_name LIKE @item_name"); parameters.Add("item_name", $"%{item_name}%"); }
