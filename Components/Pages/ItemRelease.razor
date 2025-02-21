@@ -1,0 +1,156 @@
+﻿@page "/item-releases"
+@using MSOI.Models
+@using MSOI.Services
+@inject ItemReleaseService ItemReleaseService
+
+<h3>Wydania przedmiotów</h3>
+
+<!-- Przycisk do odświeżenia listy wydań -->
+<button class="btn btn-primary" @onclick="LoadItemReleases">Odśwież listę</button>
+
+<hr />
+
+<h4>Dodaj nowe wydanie</h4>
+<div class="mb-3">
+    <input placeholder="ID Pracownika" type="number" @bind="newItemRelease.Worker_id" class="form-control mb-2" />
+    <input placeholder="ID Typu Przedmiotu" type="number" @bind="newItemRelease.Item_type_id" class="form-control mb-2" />
+    <input placeholder="Rozmiar" @bind="newItemRelease.Size" class="form-control mb-2" />
+    <input placeholder="Kolor" @bind="newItemRelease.Color" class="form-control mb-2" />
+    <input type="date" @bind="newItemRelease.Release_date" class="form-control mb-2" />
+    <input type="date" @bind="newItemRelease.Exchange_date" class="form-control mb-2" />
+    <button class="btn btn-success" @onclick="InsertItemRelease">Dodaj</button>
+</div>
+
+<hr />
+
+<h4>Lista wydań</h4>
+@if (itemReleases == null)
+{
+    <p><em>Ładowanie...</em></p>
+}
+else if (!itemReleases.Any())
+{
+    <p>Brak wydań w bazie.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ID Pracownika</th>
+                <th>ID Typu Przedmiotu</th>
+                <th>Rozmiar</th>
+                <th>Kolor</th>
+                <th>Data wydania</th>
+                <th>Data wymiany</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var release in itemReleases)
+            {
+                <tr>
+                    <td>@release.Id</td>
+                    <td>@release.Worker_id</td>
+                    <td>@release.Item_type_id</td>
+                    <td>@release.Size</td>
+                    <td>@release.Color</td>
+                    <td>@release.Release_date.ToShortDateString()</td>
+                    <td>@release.Exchange_date.ToShortDateString()</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="() => EditItemRelease(release)">Edytuj</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteItemRelease(release)">Usuń</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (editingItemRelease != null)
+{
+    <hr />
+    <h4>Edycja wydania</h4>
+    <div class="mb-3">
+        <input placeholder="ID Pracownika" type="number" @bind="editingItemRelease.Worker_id" class="form-control mb-2" />
+        <input placeholder="ID Typu Przedmiotu" type="number" @bind="editingItemRelease.Item_type_id" class="form-control mb-2" />
+        <input placeholder="Rozmiar" @bind="editingItemRelease.Size" class="form-control mb-2" />
+        <input placeholder="Kolor" @bind="editingItemRelease.Color" class="form-control mb-2" />
+        <input type="date" @bind="editingItemRelease.Release_date" class="form-control mb-2" />
+        <input type="date" @bind="editingItemRelease.Exchange_date" class="form-control mb-2" />
+        <button class="btn btn-success" @onclick="UpdateItemRelease">Aktualizuj</button>
+        <button class="btn btn-secondary" @onclick="CancelEdit">Anuluj</button>
+    </div>
+}
+
+@code {
+    List<ItemReleaseModel> itemReleases;
+    ItemReleaseModel newItemRelease = new ItemReleaseModel();
+    ItemReleaseModel editingItemRelease;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItemReleases();
+    }
+
+    async Task LoadItemReleases()
+    {
+        itemReleases = await ItemReleaseService.GetItemReleases();
+    }
+
+    async Task InsertItemRelease()
+    {
+        bool success = await ItemReleaseService.InsertReleaseItem(newItemRelease);
+        if (success)
+        {
+            newItemRelease = new ItemReleaseModel();
+            await LoadItemReleases();
+        }
+    }
+
+    void EditItemRelease(ItemReleaseModel release)
+    {
+        editingItemRelease = new ItemReleaseModel
+            {
+                Id = release.Id,
+                Worker_id = release.Worker_id,
+                Item_type_id = release.Item_type_id,
+                Size = release.Size,
+                Color = release.Color,
+                Release_date = release.Release_date,
+                Exchange_date = release.Exchange_date
+            };
+    }
+
+    async Task UpdateItemRelease()
+    {
+        bool success = await ItemReleaseService.UpdateItemRelease(
+            editingItemRelease.Id,
+            editingItemRelease.Worker_id,
+            editingItemRelease.Item_type_id,
+            editingItemRelease.Size,
+            editingItemRelease.Color,
+            editingItemRelease.Release_date,
+            editingItemRelease.Exchange_date);
+        if (success)
+        {
+            editingItemRelease = null;
+            await LoadItemReleases();
+        }
+    }
+
+    async Task DeleteItemRelease(ItemReleaseModel release)
+    {
+        bool success = await ItemReleaseService.DeleteData(release);
+        if (success)
+        {
+            await LoadItemReleases();
+        }
+    }
+
+    void CancelEdit()
+    {
+        editingItemRelease = null;
+    }
+}
