@@ -41,7 +41,7 @@ namespace MSOI.Services
             string sql = "INSERT INTO workers (worker_name, worker_surname, position, employment_date, pesel) VALUES (@worker_name, @worker_surname, @position, @employment_date, @pesel);";
 
             int rowsInserted = await _data.SaveData(sql, worker, _connection);
-            return rowsInserted > 0; 
+            return rowsInserted > 0;
         }
 
 
@@ -60,7 +60,7 @@ namespace MSOI.Services
             sql.Append(" WHERE id = @Id;");
             parameters.Add("Id", id);
 
-            int rowsUpdated =  await _data.SaveData(sql.ToString(), parameters, _connection);
+            int rowsUpdated = await _data.SaveData(sql.ToString(), parameters, _connection);
             return rowsUpdated > 0;
         }
 
