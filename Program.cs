@@ -13,6 +13,7 @@ builder.Services.AddSingleton<IDataAccess, DataAccess>();
 builder.Services.AddScoped<WorkerService>();
 builder.Services.AddScoped<ItemTypeService>();
 builder.Services.AddScoped<ItemReleaseService>();
+builder.Services.AddScoped<WorkerItemService>();
 
 var app = builder.Build();
 
