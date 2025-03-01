@@ -1,26 +1,42 @@
 ﻿@inherits LayoutComponentBase
 
+@* Required *@
 <MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
 
 <MudLayout>
     <!-- Pasek nawigacyjny -->
     <MudAppBar Color="Color.Primary">
-        <MudText Typo="Typo.h6">Moja Aplikacja</MudText>
+        <MudText Typo="Typo.h5" Class="ml-4">SOI Manager</MudText>
         <MudSpacer />
-        <MudIconButton Icon="mdi-menu" OnClick="ToggleDrawer" />
+        <MudIconButton Icon="Icons.Material.Filled.Menu" OnClick="ToggleDrawer" />
     </MudAppBar>
 
     <!-- Panel boczny -->
-    <MudDrawer Open="drawerOpen" ClipMode="DrawerClipMode.Never" Variant="DrawerVariant.Responsive">
-        <MudNavMenu>
-            <MudNavLink Href="/" Icon="mdi-account-group">Pracownicy</MudNavLink>
-            <MudNavLink Href="/item-types" Icon="mdi-package-variant">Typ przedmiotu</MudNavLink>
+    <MudDrawer Open="drawerOpen" ClipMode="DrawerClipMode.Never" Variant="DrawerVariant.Responsive"
+               DrawerWidth="260px" Color="Color.Surface">
+        <MudNavMenu Class="mud-width-full px-3">
+            <MudText Typo="Typo.h6" Class="py-3 text-primary">Nawigacja</MudText>
+            <MudDivider Class="mb-2" />
+
+            <MudNavLink Href="/" Icon="@Icons.Material.Filled.Work" Color="Color.Primary">
+                Pracownicy
+            </MudNavLink>
+            <MudNavLink Href="/item-types" Icon="@Icons.Material.Filled.Category" Color="Color.Primary">
+                Przedmioty
+            </MudNavLink>
         </MudNavMenu>
     </MudDrawer>
 
     <!-- Główna zawartość strony -->
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
             @Body
         </MudContainer>
     </MudMainContent>

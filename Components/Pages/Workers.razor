@@ -4,164 +4,71 @@
 @inject WorkerService WorkerService
 
 <MudContainer>
-    <MudCard Class="p-4">
-        <MudCardContent>
-            <MudTypography Variant="H4">Lista Pracowników</MudTypography>
+    <MudGrid>
+        <!-- Lewa sekcja: Lista Pracowników -->
+        <MudItem xs="12" md="6">
+            <MudCard Class="p-4">
+                <MudCardContent>
+                    <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Send" Color="Color.Primary" OnClick="ShowItems">Send</MudButton>
+                    @if (workers.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-4">
+                            Trwa pobieranie danych...
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        @foreach (WorkerModel w in workers)
+                        {
+                            <WorkerDisplay Worker="@w" OnSelect="ShowItems" />
+                        }
+                    }              
 
-            <!-- Przycisk do odświeżenia listy pracowników -->
-            <MudButton Color="Color.Primary" OnClick="LoadWorkers" StartIcon="@Icons.Material.Filled.Refresh">
-                Odśwież listę
-            </MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
 
-            <!-- Przycisk dodania nowego pracownika -->
-            <MudButton Color="Color.Success" OnClick="OpenAddDialog" StartIcon="@Icons.Material.Filled.Add" Class="ml-2">
-                Dodaj pracownika
-            </MudButton>
+        <!-- Prawa sekcja: Przyporządkowane przedmioty -->
+        <MudItem xs="12" md="6">
+            <MudCard Class="p-4">
+                <MudCardContent>
+                    @if (!showItems)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-4">
+                            Wybierz pracownika, aby wykazać jego przedmioty.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-4">
+                            YEEEEEEEEEEEEEEEEEEEEEET
+                        </MudAlert>
+                    }
 
-            <MudTable Items="workers" Dense="true" Hover="true" Class="mt-4">
-                <HeaderContent>
-                    <MudTh>Id</MudTh>
-                    <MudTh>Imię</MudTh>
-                    <MudTh>Nazwisko</MudTh>
-                    <MudTh>Stanowisko</MudTh>
-                    <MudTh>Data zatrudnienia</MudTh>
-                    <MudTh>Pesel</MudTh>
-                    <MudTh>Akcje</MudTh>
-                </HeaderContent>
-                <RowTemplate Context="worker">
-                    <MudTd>@worker.Id</MudTd>
-                    <MudTd>@worker.Worker_name</MudTd>
-                    <MudTd>@worker.Worker_surname</MudTd>
-                    <MudTd>@worker.Position</MudTd>
-                    <MudTd>@worker.Employment_date.ToShortDateString()</MudTd>
-                    <MudTd>@worker.Pesel</MudTd>
-                    <MudTd>
-                        <MudButton Color="Color.Warning" Size="Size.Small" OnClick="() => OpenEditDialog(worker)">
-                            <MudIcon Icon="@Icons.Material.Filled.Edit" />
-                        </MudButton>
-                        <MudButton Color="Color.Error" Size="Size.Small" OnClick="() => DeleteWorker(worker)" Class="ml-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Delete" />
-                        </MudButton>
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <MudAlert Severity="Severity.Error" Class="mt-2">@errorMessage</MudAlert>
-            }
-        </MudCardContent>
-    </MudCard>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 </MudContainer>
 
-<!-- Dialog do dodawania i edycji pracownika -->
-<MudDialog @bind-IsOpen="isDialogOpen">
-    <DialogContent>
-        <MudText Typo="Typo.subtitle2">@dialogTitle</MudText>
-        <MudTextField Label="Imię" @bind-Value="editingWorker.Worker_name" Class="mt-2" />
-        <MudTextField Label="Nazwisko" @bind-Value="editingWorker.Worker_surname" Class="mt-2" />
-        <MudTextField Label="Stanowisko" @bind-Value="editingWorker.Position" Class="mt-2" />
-        <MudTextField Label="Data zatrudnienia" Type="date" @bind-Value="formattedEmploymentDate" Class="mt-2" />
-        <MudTextField Label="Pesel" @bind-Value="editingWorker.Pesel" Class="mt-2" />
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="SaveWorker" Color="Color.Primary">Zapisz</MudButton>
-        <MudButton OnClick="CloseDialog" Color="Color.Secondary">Anuluj</MudButton>
-    </DialogActions>
-</MudDialog>
+@code
+{
 
-@code {
-    private List<WorkerModel> workers;
-    private WorkerModel editingWorker;
-    private string errorMessage;
-    private bool isDialogOpen = false;
-    private string dialogTitle = "Dodaj pracownika";
-
-    private string formattedEmploymentDate
-    {
-        get => editingWorker?.Employment_date.ToString("yyyy-MM-dd") ?? "";
-        set => editingWorker.Employment_date = DateTime.Parse(value);
-    }
+    public List<WorkerModel>? workers = new List<WorkerModel>();
+    public bool showItems = false;
 
     protected override async Task OnInitializedAsync()
-    {
-        await LoadWorkers();
-    }
-
-    private async Task LoadWorkers()
     {
         workers = await WorkerService.GetWorkers();
     }
 
-    private void OpenAddDialog()
+    public void ShowItems()
     {
-        editingWorker = new WorkerModel();
-        dialogTitle = "Dodaj pracownika";
-        isDialogOpen = true;
+        showItems = true;
+
     }
 
-    private void OpenEditDialog(WorkerModel worker)
-    {
-        editingWorker = new WorkerModel
-        {
-            Id = worker.Id,
-            Worker_name = worker.Worker_name,
-            Worker_surname = worker.Worker_surname,
-            Position = worker.Position,
-            Employment_date = worker.Employment_date,
-            Pesel = worker.Pesel
-        };
-        dialogTitle = "Edytuj pracownika";
-        isDialogOpen = true;
-    }
 
-    private async Task SaveWorker()
-    {
-        if (editingWorker.Id == 0)
-        {
-            bool success = await WorkerService.InsertData(editingWorker);
-            if (success)
-            {
-                await LoadWorkers();
-                CloseDialog();
-            }
-        }
-        else
-        {
-            bool success = await WorkerService.UpdateData(
-                editingWorker.Id,
-                editingWorker.Worker_name,
-                editingWorker.Worker_surname,
-                editingWorker.Position,
-                editingWorker.Employment_date,
-                editingWorker.Pesel
-            );
-            if (success)
-            {
-                await LoadWorkers();
-                CloseDialog();
-            }
-        }
-    }
 
-    private async Task DeleteWorker(WorkerModel worker)
-    {
-        try
-        {
-            bool success = await WorkerService.DeleteData(worker);
-            if (success)
-            {
-                await LoadWorkers();
-            }
-        }
-        catch (InvalidOperationException ex)
-        {
-            errorMessage = ex.Message;
-        }
-    }
 
-    private void CloseDialog()
-    {
-        isDialogOpen = false;
-    }
 }
