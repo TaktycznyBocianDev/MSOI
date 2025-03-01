@@ -1,23 +1,36 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudThemeProvider />
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+<MudLayout>
+    <!-- Pasek nawigacyjny -->
+    <MudAppBar Color="Color.Primary">
+        <MudText Typo="Typo.h6">Moja Aplikacja</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="mdi-menu" OnClick="ToggleDrawer" />
+    </MudAppBar>
 
-        <article class="content px-4">
+    <!-- Panel boczny -->
+    <MudDrawer Open="drawerOpen" ClipMode="DrawerClipMode.Never" Variant="DrawerVariant.Responsive">
+        <MudNavMenu>
+            <MudNavLink Href="/" Icon="mdi-account-group">Pracownicy</MudNavLink>
+            <MudNavLink Href="/item-types" Icon="mdi-package-variant">Typ przedmiotu</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <!-- Główna zawartość strony -->
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
+@code {
+    private bool drawerOpen = true;
+
+    private void ToggleDrawer()
+    {
+        drawerOpen = !drawerOpen;
+    }
+}

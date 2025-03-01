@@ -1,148 +1,150 @@
-﻿@page "/workers"
+﻿@page "/"
 @using MSOI.Models
 @using MSOI.Services
 @inject WorkerService WorkerService
 
-<h3>Workers</h3>
+<MudContainer>
+    <MudCard Class="p-4">
+        <MudCardContent>
+            <MudTypography Variant="H4">Lista Pracowników</MudTypography>
 
-<!-- Przycisk do odświeżenia listy pracowników -->
-<button class="btn btn-primary" @onclick="LoadWorkers">Odśwież listę</button>
+            <!-- Przycisk do odświeżenia listy pracowników -->
+            <MudButton Color="Color.Primary" OnClick="LoadWorkers" StartIcon="@Icons.Material.Filled.Refresh">
+                Odśwież listę
+            </MudButton>
 
-<hr />
+            <!-- Przycisk dodania nowego pracownika -->
+            <MudButton Color="Color.Success" OnClick="OpenAddDialog" StartIcon="@Icons.Material.Filled.Add" Class="ml-2">
+                Dodaj pracownika
+            </MudButton>
 
-<h4>Dodaj nowego pracownika</h4>
-<div class="mb-3">
-    <input placeholder="Imię" @bind="newWorker.Worker_name" class="form-control mb-2" />
-    <input placeholder="Nazwisko" @bind="newWorker.Worker_surname" class="form-control mb-2" />
-    <input placeholder="Stanowisko" @bind="newWorker.Position" class="form-control mb-2" />
-    <input type="date" @bind="newWorker.Employment_date" class="form-control mb-2" />
-    <input placeholder="Pesel" @bind="newWorker.Pesel" class="form-control mb-2" />
-    <button class="btn btn-success" @onclick="InsertWorker">Dodaj</button>
-</div>
+            <MudTable Items="workers" Dense="true" Hover="true" Class="mt-4">
+                <HeaderContent>
+                    <MudTh>Id</MudTh>
+                    <MudTh>Imię</MudTh>
+                    <MudTh>Nazwisko</MudTh>
+                    <MudTh>Stanowisko</MudTh>
+                    <MudTh>Data zatrudnienia</MudTh>
+                    <MudTh>Pesel</MudTh>
+                    <MudTh>Akcje</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="worker">
+                    <MudTd>@worker.Id</MudTd>
+                    <MudTd>@worker.Worker_name</MudTd>
+                    <MudTd>@worker.Worker_surname</MudTd>
+                    <MudTd>@worker.Position</MudTd>
+                    <MudTd>@worker.Employment_date.ToShortDateString()</MudTd>
+                    <MudTd>@worker.Pesel</MudTd>
+                    <MudTd>
+                        <MudButton Color="Color.Warning" Size="Size.Small" OnClick="() => OpenEditDialog(worker)">
+                            <MudIcon Icon="@Icons.Material.Filled.Edit" />
+                        </MudButton>
+                        <MudButton Color="Color.Error" Size="Size.Small" OnClick="() => DeleteWorker(worker)" Class="ml-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                        </MudButton>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
 
-<hr />
-
-<h4>Lista pracowników</h4>
-@if (workers == null)
-{
-    <p><em>Ładowanie...</em></p>
-}
-else if (!workers.Any())
-{
-    <p>Brak pracowników w bazie.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Imię</th>
-                <th>Nazwisko</th>
-                <th>Stanowisko</th>
-                <th>Data zatrudnienia</th>
-                <th>Pesel</th>
-                <th>Akcje</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var worker in workers)
+            @if (!string.IsNullOrEmpty(errorMessage))
             {
-                <tr>
-                    <td>@worker.Id</td>
-                    <td>@worker.Worker_name</td>
-                    <td>@worker.Worker_surname</td>
-                    <td>@worker.Position</td>
-                    <td>@worker.Employment_date.ToShortDateString()</td>
-                    <td>@worker.Pesel</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" @onclick="@(() => EditWorker(worker))">Edytuj</button>
-                        <button class="btn btn-danger btn-sm" @onclick="@(() => DeleteWorker(worker))">Usuń</button>
-                    </td>
-                </tr>
+                <MudAlert Severity="Severity.Error" Class="mt-2">@errorMessage</MudAlert>
             }
-        </tbody>
-    </table>
-}
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
 
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger">@errorMessage</div>
-}
-
-@if (editingWorker != null)
-{
-    <hr />
-    <h4>Edycja pracownika</h4>
-    <div class="mb-3">
-        <input placeholder="Imię" @bind="editingWorker.Worker_name" class="form-control mb-2" />
-        <input placeholder="Nazwisko" @bind="editingWorker.Worker_surname" class="form-control mb-2" />
-        <input placeholder="Stanowisko" @bind="editingWorker.Position" class="form-control mb-2" />
-        <input type="date" @bind="editingWorker.Employment_date" class="form-control mb-2" />
-        <input placeholder="Pesel" @bind="editingWorker.Pesel" class="form-control mb-2" />
-        <button class="btn btn-success" @onclick="UpdateWorker">Aktualizuj</button>
-        <button class="btn btn-secondary" @onclick="CancelEdit">Anuluj</button>
-    </div>
-}
+<!-- Dialog do dodawania i edycji pracownika -->
+<MudDialog @bind-IsOpen="isDialogOpen">
+    <DialogContent>
+        <MudText Typo="Typo.subtitle2">@dialogTitle</MudText>
+        <MudTextField Label="Imię" @bind-Value="editingWorker.Worker_name" Class="mt-2" />
+        <MudTextField Label="Nazwisko" @bind-Value="editingWorker.Worker_surname" Class="mt-2" />
+        <MudTextField Label="Stanowisko" @bind-Value="editingWorker.Position" Class="mt-2" />
+        <MudTextField Label="Data zatrudnienia" Type="date" @bind-Value="formattedEmploymentDate" Class="mt-2" />
+        <MudTextField Label="Pesel" @bind-Value="editingWorker.Pesel" Class="mt-2" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="SaveWorker" Color="Color.Primary">Zapisz</MudButton>
+        <MudButton OnClick="CloseDialog" Color="Color.Secondary">Anuluj</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
-    List<WorkerModel> workers;
-    WorkerModel newWorker = new WorkerModel();
-    WorkerModel editingWorker;
-    string errorMessage;
+    private List<WorkerModel> workers;
+    private WorkerModel editingWorker;
+    private string errorMessage;
+    private bool isDialogOpen = false;
+    private string dialogTitle = "Dodaj pracownika";
+
+    private string formattedEmploymentDate
+    {
+        get => editingWorker?.Employment_date.ToString("yyyy-MM-dd") ?? "";
+        set => editingWorker.Employment_date = DateTime.Parse(value);
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await LoadWorkers();
     }
 
-    async Task LoadWorkers()
+    private async Task LoadWorkers()
     {
         workers = await WorkerService.GetWorkers();
     }
 
-    async Task InsertWorker()
+    private void OpenAddDialog()
     {
-        bool success = await WorkerService.InsertData(newWorker);
-        if (success)
-        {
-            newWorker = new WorkerModel(); // czyścimy formularz
-            await LoadWorkers();
-        }
+        editingWorker = new WorkerModel();
+        dialogTitle = "Dodaj pracownika";
+        isDialogOpen = true;
     }
 
-    void EditWorker(WorkerModel worker)
+    private void OpenEditDialog(WorkerModel worker)
     {
-        // Tworzymy kopię pracownika do edycji, aby nie zmieniać bezpośrednio listy
         editingWorker = new WorkerModel
-            {
-                Id = worker.Id,
-                Worker_name = worker.Worker_name,
-                Worker_surname = worker.Worker_surname,
-                Position = worker.Position,
-                Employment_date = worker.Employment_date,
-                Pesel = worker.Pesel
-            };
+        {
+            Id = worker.Id,
+            Worker_name = worker.Worker_name,
+            Worker_surname = worker.Worker_surname,
+            Position = worker.Position,
+            Employment_date = worker.Employment_date,
+            Pesel = worker.Pesel
+        };
+        dialogTitle = "Edytuj pracownika";
+        isDialogOpen = true;
     }
 
-    async Task UpdateWorker()
+    private async Task SaveWorker()
     {
-        // Używamy metody UpdateData; przekazujemy wszystkie pola z edytowanego obiektu
-        bool success = await WorkerService.UpdateData(
-            editingWorker.Id,
-            editingWorker.Worker_name,
-            editingWorker.Worker_surname,
-            editingWorker.Position,
-            editingWorker.Employment_date,
-            editingWorker.Pesel);
-        if (success)
+        if (editingWorker.Id == 0)
         {
-            editingWorker = null;
-            await LoadWorkers();
+            bool success = await WorkerService.InsertData(editingWorker);
+            if (success)
+            {
+                await LoadWorkers();
+                CloseDialog();
+            }
+        }
+        else
+        {
+            bool success = await WorkerService.UpdateData(
+                editingWorker.Id,
+                editingWorker.Worker_name,
+                editingWorker.Worker_surname,
+                editingWorker.Position,
+                editingWorker.Employment_date,
+                editingWorker.Pesel
+            );
+            if (success)
+            {
+                await LoadWorkers();
+                CloseDialog();
+            }
         }
     }
 
-    async Task DeleteWorker(WorkerModel worker)
+    private async Task DeleteWorker(WorkerModel worker)
     {
         try
         {
@@ -158,8 +160,8 @@ else
         }
     }
 
-    void CancelEdit()
+    private void CloseDialog()
     {
-        editingWorker = null;
+        isDialogOpen = false;
     }
 }

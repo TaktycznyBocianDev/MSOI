@@ -1,6 +1,7 @@
 using MSOI.Components;
 using DataLibrary;
 using MSOI.Services; //adding using statement
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,8 @@ builder.Services.AddScoped<WorkerService>();
 builder.Services.AddScoped<ItemTypeService>();
 builder.Services.AddScoped<ItemReleaseService>();
 builder.Services.AddScoped<WorkerItemService>();
+
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 
