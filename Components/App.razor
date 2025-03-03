@@ -5,8 +5,14 @@
 
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-    <script src="_framework/blazor.server.js"></script>
+
 </head>
+
+<body>
+    <Routes @rendermode=RenderMode.InteractiveServer />
+    @* <script src="_framework/blazor.web.js"></script> *@
+    <script src="_framework/blazor.server.js"></script>
+</body>
 
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(Program).Assembly">
