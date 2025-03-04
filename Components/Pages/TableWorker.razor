@@ -1,0 +1,93 @@
+﻿@page "/"
+@using MSOI.Models
+@using MSOI.Services
+@inject WorkerService WorkerService
+
+<MudContainer>
+    <MudGrid>
+        <!-- Lewa sekcja: Lista Pracowników -->
+        <MudItem xs="12" md="6">
+            <MudTable T="WorkerModel" Items="@workers" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTable"
+                      RowClass="cursor-pointer" OnRowClick="RowClickEvent">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h3">Pracownicy</MudText>
+                    <MudSpacer />
+                    <MudText Typo="Typo.h6">Wpisz imie, aby wyszukać:</MudText>
+                    <MudTextField T="string" ValueChanged="@(s=>SearchWorkers(s))" Placeholder="Wpisz imie" Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Nr</MudTh>
+                    <MudTh>Imie</MudTh>
+                    <MudTh>Nazwisko</MudTh>
+                    <MudTh>PESEL</MudTh>
+                    <MudTh>Stanowisko</MudTh>
+                    <MudTh>Data zatrudnienia</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Nr">@context.Id</MudTd>
+                    <MudTd DataLabel="Imie">@context.Worker_name</MudTd>
+                    <MudTd DataLabel="Nazwisko">@context.Worker_surname</MudTd>
+                    <MudTd DataLabel="PESEL">@context.Pesel</MudTd>
+                    <MudTd DataLabel="Stanowisko">@context.Position</MudTd>
+                    <MudTd DataLabel="Data zatrudnieni">@context.Employment_date</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudItem>
+
+
+        <!-- Prawa sekcja: Przyporządkowane przedmioty -->
+        <MudItem xs="12" md="6">
+            <MudCard Class="p-4">
+                <MudCardContent>
+                    @if (!showItems)
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-4">
+                            Wybierz pracownika, aby wykazać jego przedmioty.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" Class="mt-4">
+                            YEEEEEEEEEEEEEEEEEEEEEET
+                        </MudAlert>
+                    }
+
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code
+{
+
+    public List<WorkerModel>? workers = new List<WorkerModel>();
+    public bool showItems = false;
+    private MudTable<WorkerModel> mudTable;
+
+    protected override async Task OnInitializedAsync()
+    {
+        workers = await WorkerService.GetWorkers();
+    }
+
+    public async Task SearchWorkers(string Pesel)
+    {
+        workers = await WorkerService.GetWorkers(pesel: Pesel);
+    }
+
+    public void ShowItems()
+    {
+        showItems = true;
+        StateHasChanged();
+
+    }
+
+    private void RowClickEvent(TableRowClickEventArgs<WorkerModel> args)
+    {
+        ShowItems();
+    }
+
+
+
+}
