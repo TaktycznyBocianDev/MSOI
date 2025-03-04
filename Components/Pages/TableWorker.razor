@@ -6,15 +6,22 @@
 <MudContainer>
     <MudGrid>
         <!-- Lewa sekcja: Lista Pracowników -->
-        <MudItem xs="12" md="6">
+        <MudItem xs="13" md="7">
             <MudTable T="WorkerModel" Items="@workers" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTable"
-                      RowClass="cursor-pointer" OnRowClick="RowClickEvent">
+            RowClass="cursor-pointer" OnRowClick="RowClickEvent">
                 <ToolBarContent>
-                    <MudText Typo="Typo.h3">Pracownicy</MudText>
-                    <MudSpacer />
-                    <MudText Typo="Typo.h6">Wpisz imie, aby wyszukać:</MudText>
-                    <MudTextField T="string" ValueChanged="@(s=>SearchWorkers(s))" Placeholder="Wpisz imie" Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.h3">Pracownicy</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                             @* <MudText Typo="Typo.h6">Wpisz imie, aby wyszukać:</MudText>  *@
+                            <MudTextField T="string" ValueChanged="@(s=>SetWorkerName(s))" Placeholder="Wpisz imie" Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                            <MudTextField T="string" ValueChanged="@(s=>SetPesel(s))" Placeholder="Wpisz PESEL" Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                        </MudItem>       
+                    </MudGrid>                    
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh>Nr</MudTh>
@@ -23,6 +30,7 @@
                     <MudTh>PESEL</MudTh>
                     <MudTh>Stanowisko</MudTh>
                     <MudTh>Data zatrudnienia</MudTh>
+                    <MudTh>Edytuj</MudTh>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Nr">@context.Id</MudTd>
@@ -30,14 +38,15 @@
                     <MudTd DataLabel="Nazwisko">@context.Worker_surname</MudTd>
                     <MudTd DataLabel="PESEL">@context.Pesel</MudTd>
                     <MudTd DataLabel="Stanowisko">@context.Position</MudTd>
-                    <MudTd DataLabel="Data zatrudnieni">@context.Employment_date</MudTd>
+                    <MudTd DataLabel="Data zatrudnieni">@context.Employment_date.ToString("dd.MM.yyyy")</MudTd>
+                    <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small" /></MudTd>
                 </RowTemplate>
             </MudTable>
         </MudItem>
 
 
         <!-- Prawa sekcja: Przyporządkowane przedmioty -->
-        <MudItem xs="12" md="6">
+        <MudItem xs="11" md="5">
             <MudCard Class="p-4">
                 <MudCardContent>
                     @if (!showItems)
@@ -66,14 +75,30 @@
     public bool showItems = false;
     private MudTable<WorkerModel> mudTable;
 
+    private string workerName;
+    private string pesel;
+
+
     protected override async Task OnInitializedAsync()
     {
         workers = await WorkerService.GetWorkers();
     }
 
-    public async Task SearchWorkers(string Pesel)
+    private async Task SetWorkerName(string name)
     {
-        workers = await WorkerService.GetWorkers(pesel: Pesel);
+        workerName = name;
+        await SearchWorkers();
+    }
+
+    private async Task SetPesel(string pesel)
+    {
+        this.pesel = pesel;
+        await SearchWorkers();
+    }
+
+    public async Task SearchWorkers()
+    {
+        workers = await WorkerService.GetWorkers(name: workerName, pesel: pesel);
     }
 
     public void ShowItems()
