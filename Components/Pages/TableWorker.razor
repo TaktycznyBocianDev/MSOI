@@ -2,6 +2,7 @@
 @using MSOI.Models
 @using MSOI.Services
 @inject WorkerService WorkerService
+@inject WorkerItemService WorkerItemService
 
 <MudContainer>
     <MudGrid>
@@ -15,11 +16,10 @@
                             <MudText Typo="Typo.h3">Pracownicy</MudText>
                         </MudItem>
                         <MudItem xs="12" md="6">
-                             @* <MudText Typo="Typo.h6">Wpisz imie, aby wyszukać:</MudText>  *@
-                            <MudTextField T="string" ValueChanged="@(s=>SetWorkerName(s))" Placeholder="Wpisz imie" Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                            <MudTextField T="string" ValueChanged="@(s=>SetPesel(s))" Placeholder="Wpisz PESEL" Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                            <MudTextField T="string" ValueChanged="@(s=>SetWorkerName(s))" Placeholder="Wyszukaj: imie" Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                            <MudTextField T="string" ValueChanged="@(s=>SetPesel(s))" Placeholder="Wyszukaj: PESEL" Adornment="Adornment.Start"
+                            AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                         </MudItem>       
                     </MudGrid>                    
                 </ToolBarContent>
@@ -38,45 +38,68 @@
                     <MudTd DataLabel="Nazwisko">@context.Worker_surname</MudTd>
                     <MudTd DataLabel="PESEL">@context.Pesel</MudTd>
                     <MudTd DataLabel="Stanowisko">@context.Position</MudTd>
-                    <MudTd DataLabel="Data zatrudnieni">@context.Employment_date.ToString("dd.MM.yyyy")</MudTd>
+                    <MudTd DataLabel="Data zatrudnienia">@context.Employment_date.ToString("dd.MM.yyyy")</MudTd>
                     <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small" /></MudTd>
                 </RowTemplate>
             </MudTable>
         </MudItem>
 
-
         <!-- Prawa sekcja: Przyporządkowane przedmioty -->
-        <MudItem xs="11" md="5">
-            <MudCard Class="p-4">
-                <MudCardContent>
-                    @if (!showItems)
-                    {
-                        <MudAlert Severity="Severity.Info" Class="mt-4">
-                            Wybierz pracownika, aby wykazać jego przedmioty.
-                        </MudAlert>
-                    }
-                    else
-                    {
-                        <MudAlert Severity="Severity.Info" Class="mt-4">
-                            YEEEEEEEEEEEEEEEEEEEEEET
-                        </MudAlert>
-                    }
+        <MudItem xs="12" md="5">
 
-                </MudCardContent>
-            </MudCard>
+            @if(workerItems.Count == 0)
+            {
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h3">Wybierz pracownika obok, aby wyświetlić przedmioty.</MudText>
+                </MudItem>
+            }
+            else
+            {
+                <MudTable T="WorkerItemDTO" Items="@workerItems" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTableItems"
+                          RowClass="cursor-pointer" OnRowClick="RowClickEventItems">
+                    <ToolBarContent>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudText Typo="Typo.h3">Przedmioty</MudText>
+                                </MudItem>
+                        </MudGrid>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Nazwa</MudTh>
+                        <MudTh>Rozmiar</MudTh>
+                        <MudTh>Kolor</MudTh>
+                        <MudTh>Opis</MudTh>
+                        <MudTh>Data wypożyczenia</MudTh>
+                        <MudTh>Data wymiany</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Nazwa">@context.Item_name</MudTd>
+                        <MudTd DataLabel="Rozmiar">@context.Size</MudTd>
+                        <MudTd DataLabel="Kolor">@context.Color</MudTd>
+                        <MudTd DataLabel="Opis">@context.Item_description</MudTd>
+                        <MudTd DataLabel="Data wypożyczenia">@context.Release_date.ToString("dd.MM.yyyy")</MudTd>
+                        <MudTd DataLabel="Data wymiany">@context.Exchange_date.ToString("dd.MM.yyyy")</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }           
         </MudItem>
     </MudGrid>
 </MudContainer>
+
 
 @code
 {
 
     public List<WorkerModel>? workers = new List<WorkerModel>();
+    public List<WorkerItemDTO> workerItems = new List<WorkerItemDTO>();
+
     public bool showItems = false;
     private MudTable<WorkerModel> mudTable;
+    private MudTable<WorkerItemDTO> mudTableItems;
 
     private string workerName;
     private string pesel;
+
 
 
     protected override async Task OnInitializedAsync()
@@ -101,16 +124,20 @@
         workers = await WorkerService.GetWorkers(name: workerName, pesel: pesel);
     }
 
-    public void ShowItems()
+    public async Task ShowItems(int id)
     {
-        showItems = true;
+        workerItems = await WorkerItemService.GetItemsByWorker(id);
         StateHasChanged();
-
     }
 
     private void RowClickEvent(TableRowClickEventArgs<WorkerModel> args)
     {
-        ShowItems();
+        ShowItems(args.Item.Id);
+    }
+
+    private void RowClickEventItems(TableRowClickEventArgs<WorkerItemDTO> args)
+    {
+        ShowItems(args.Item.Id);
     }
 
 
