@@ -5,10 +5,10 @@
 @inject WorkerItemService WorkerItemService
 
 <MudContainer>
-    <MudGrid>
+    <MudGrid Style="width: 100%; max-width: 100%;">
         <!-- Lewa sekcja: Lista Pracowników -->
-        <MudItem xs="13" md="7">
-            <MudTable T="WorkerModel" Items="@workers" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTable"
+        <MudItem Style="width: 100%; max-width: 100%;">
+            <MudTable T="WorkerModel" Items="@workers" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTable" Style="width: 100%;"
             RowClass="cursor-pointer" OnRowClick="RowClickEvent">
                 <ToolBarContent>
                     <MudGrid>
@@ -49,13 +49,13 @@
 
             @if(workerItems.Count == 0)
             {
-                <MudItem xs="12" md="6">
+                <MudItem xs="12" md="5">
                     <MudText Typo="Typo.h3">Wybierz pracownika obok, aby wyświetlić przedmioty.</MudText>
                 </MudItem>
             }
             else
             {
-                <MudTable T="WorkerItemDTO" Items="@workerItems" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTableItems"
+                <MudTable T="WorkerItemDTO" Items="@workerItems" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTableItems" Style="width: 100%;" Dense="true"
                           RowClass="cursor-pointer" OnRowClick="RowClickEventItems">
                     <ToolBarContent>
                         <MudGrid>

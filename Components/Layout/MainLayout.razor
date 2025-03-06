@@ -15,12 +15,11 @@
     <MudAppBar Color="Color.Primary">
         <MudText Typo="Typo.h5" Class="ml-4">SOI Manager</MudText>
         <MudSpacer />
-        <MudIconButton Icon="Icons.Material.Filled.Menu" OnClick="ToggleDrawer" />
     </MudAppBar>
 
-    <!-- Panel boczny -->
-    <MudDrawer Open="drawerOpen" ClipMode="DrawerClipMode.Never" Variant="DrawerVariant.Responsive"
-               DrawerWidth="260px" Color="Color.Surface">
+    <!-- Stały drawer -->
+    <MudDrawer Open="true" Anchor="Anchor.Start" Elevation="1" Variant="DrawerVariant.Persistent"
+               MiniVariantWidth="56px">
         <MudNavMenu Class="mud-width-full px-3">
             <MudText Typo="Typo.h6" Class="py-3 text-primary">Nawigacja</MudText>
             <MudDivider Class="mb-2" />
@@ -36,17 +35,8 @@
 
     <!-- Główna zawartość strony -->
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Style="width: 100%; max-width: 100%;">
             @Body
         </MudContainer>
     </MudMainContent>
 </MudLayout>
-
-@code {
-    private bool drawerOpen = true;
-
-    private void ToggleDrawer()
-    {
-        drawerOpen = !drawerOpen;
-    }
-}
