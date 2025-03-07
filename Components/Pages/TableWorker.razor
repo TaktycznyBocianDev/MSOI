@@ -4,10 +4,10 @@
 @inject WorkerService WorkerService
 @inject WorkerItemService WorkerItemService
 
-<MudContainer>
-    <MudGrid Style="width: 100%; max-width: 100%;">
+<MudContainer Style="width: 100%; max-width: 100%;">
+    <MudGrid>
         <!-- Lewa sekcja: Lista Pracowników -->
-        <MudItem Style="width: 100%; max-width: 100%;">
+        <MudItem xs="12" md="7">
             <MudTable T="WorkerModel" Items="@workers" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTable" Style="width: 100%;"
             RowClass="cursor-pointer" OnRowClick="RowClickEvent">
                 <ToolBarContent>
