@@ -19,7 +19,7 @@ namespace MSOI.Services
             _data = data;
             _connection = connection.GetConnectionString("default");
         }
-
+          
         public async Task<List<WorkerModel>> GetWorkers(int? id = null, string? name = null, string? surname = null, string? position = null, DateTime? employment_date = null, string? pesel = null)
         {
             var parameters = new DynamicParameters();
