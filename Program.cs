@@ -2,6 +2,7 @@ using MSOI.Components;
 using DataLibrary;
 using MSOI.Services; //adding using statement
 using MudBlazor.Services;
+using MSOI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddRazorComponents()
 
 //Adding DataAccess service
 builder.Services.AddSingleton<IDataAccess, DataAccess>();
+builder.Services.AddScoped<IWorkerRepository, WorkerRepository>();
 builder.Services.AddScoped<WorkerService>();
 builder.Services.AddScoped<ItemTypeService>();
 builder.Services.AddScoped<ItemReleaseService>();
