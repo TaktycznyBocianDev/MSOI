@@ -38,14 +38,26 @@ namespace MSOI.Services
 
         }
 
-        public Task<bool> InsertWorker(WorkerModel worker)
+        public async Task<bool> InsertWorker(WorkerModel worker)
         {
-            throw new NotImplementedException();
+            ValidateName(worker.Worker_name);
+            ValidateSurname(worker.Worker_surname);
+            ValidatePosition(worker.Position);
+            ValidateEmploymentDate(worker.Employment_date);
+            ValidatePesel(worker.Pesel);
+
+            return await _workerRepository.InsertData(worker);
         }
 
-        public Task<bool> UpdateWorker(int id, string? name = null, string? surname = null, string? position = null, DateTime? employment_date = null, string? pesel = null)
+        public async Task<bool> UpdateWorker(int id, string? name = null, string? surname = null, string? position = null, DateTime? employment_date = null, string? pesel = null)
         {
-            throw new NotImplementedException();
+            if(name !=null) ValidateName(name);
+            if(surname != null) ValidateSurname(surname);
+            if(position != null) ValidatePosition(position);
+            if(employment_date != null) ValidateEmploymentDate(employment_date);
+            if(pesel != null) ValidatePesel(pesel);
+
+            return await _workerRepository.UpdateData(id, name, surname, position, employment_date, pesel);
         }
 
         public async Task<bool> DeleteWorker(int id)
@@ -96,8 +108,13 @@ namespace MSOI.Services
             }
         }
 
-        private void ValidateEmploymentDate(DateTime employment_date)
+        private void ValidateEmploymentDate(DateTime? employment_date)
         {
+            if (!employment_date.HasValue)
+            {
+                throw new InvalidOperationException("Data zatrudnienia musi posiadać wartość.");
+
+            }
             if (employment_date > DateTime.Now)
             {
                 throw new InvalidOperationException("Data zatrudnienia nie może być w przyszłości.");
@@ -105,16 +122,19 @@ namespace MSOI.Services
 
         }
 
-        private static bool ValidatePesel(string pesel)
+        private async Task ValidatePesel(string pesel)
         {
-            string peselPattern = @"^\d{11}$";
-            if (!Regex.IsMatch(pesel, peselPattern))
+            if (string.IsNullOrWhiteSpace(pesel))
             {
-                return false;
+                throw new ArgumentNullException(nameof(pesel), "PESEL nie może być pusty.");
+            }
+
+            if (!Regex.IsMatch(pesel, @"^\d{11}$"))
+            {
+                throw new ArgumentException("PESEL musi zawierać dokładnie 11 cyfr.", nameof(pesel));
             }
 
             int[] peselDigits = pesel.Select(c => c - '0').ToArray();
-
             int[] weights = { 1, 3, 7, 9, 1, 3, 7, 9, 1, 3 };
 
             int sum = 0;
@@ -125,8 +145,18 @@ namespace MSOI.Services
 
             int controlDigit = (10 - (sum % 10)) % 10;
 
-            return controlDigit == peselDigits[10];
+            if (controlDigit != peselDigits[10])
+            {
+                throw new ArgumentException("Podano błędny PESEL – nie zgadza się cyfra kontrolna.", nameof(pesel));
+            }
+
+            bool doPeselExist = await _workerRepository.DoPeselExist(pesel);
+            if (doPeselExist)
+            {
+                throw new InvalidOperationException("Pracownik z takim PESEL jest już zapisany w bazie.");
+            }
         }
+
 
 
     }

@@ -1,84 +1,100 @@
 ﻿using Dapper;
 using DataLibrary;
 using MSOI.Models;
+using MSOI.Repositories;
 using MySql.Data.MySqlClient;
 using System.Data.Common;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace MSOI.Services
 {
-    public class ItemTypeService
+    public class ItemTypeService : IItemService
     {
 
-        private readonly IDataAccess _data;
-        private readonly string _connection;
-
-        public ItemTypeService(IDataAccess data, IConfiguration connection)
+        private readonly ItemTypeRepository _repository;
+        public ItemTypeService(ItemTypeRepository repository)
         {
-            _data = data;
-            _connection = connection.GetConnectionString("default");
+            _repository = repository;
         }
-
 
         public async Task<List<ItemTypeModel>> GetItemTypes(int? id = null, string? item_name = null, int? default_replacement_period = null, string? item_description = null)
         {
-            var parameters = new DynamicParameters();
-            var sql = new StringBuilder("SELECT * FROM item_type WHERE 1=1");
+            List<ItemTypeModel> itemTypeModels = await _repository.GetItemTypes(id, item_name, default_replacement_period, item_description);
 
-            if (id != null) { sql.Append(" AND id LIKE @id"); parameters.Add("id", $"{id}"); }
-            if (!string.IsNullOrEmpty(item_name)) { sql.Append(" AND item_name LIKE @item_name"); parameters.Add("item_name", $"%{item_name}%"); }
-            if (default_replacement_period != null) { sql.Append(" AND default_replacement_period LIKE @default_replacement_period"); parameters.Add("default_replacement_period", $"{default_replacement_period}"); }
-            if (!string.IsNullOrEmpty(item_name)) { sql.Append(" AND item_name LIKE @item_name"); parameters.Add("item_name", $"%{item_name}%"); }
+            if (itemTypeModels == null || itemTypeModels.Count == 0)
+            {
+                throw new Exception("Błąd podczas pobierania przedmiotów z bazy.");
+            }
 
-            return await _data.LoadData<ItemTypeModel, dynamic>(sql.ToString(), parameters, _connection);
+            return itemTypeModels;
         }
 
-
-        public async Task<bool> InsertData(ItemTypeModel itemType)
+        public Task<bool> InsertData(ItemTypeModel itemType)
         {
-            string sql = "INSERT INTO item_type (item_name, default_replacement_period, item_description) VALUES (@item_name, @default_replacement_period, @item_description);";
+            ValidateItemName(itemType.Item_name);
+            ValidateItemDescription(itemType.Item_description);
+            ValidateDefaultReplacementPeriod(itemType.Default_replacement_period);
 
-            int rowsInserted = await _data.SaveData(sql, itemType, _connection);
-            return rowsInserted > 0;
+            return _repository.InsertData(itemType);
         }
 
-        public async Task<bool> UpdateData(int id, string? item_name = null, int? default_replacement_period = null, string? item_description = null)
+
+        public Task<bool> UpdateData(int id, string? item_name = null, int? default_replacement_period = null, string? item_description = null)
         {
-            var parameters = new DynamicParameters();
-            var sql = new StringBuilder("UPDATE item_type SET");
+            if (item_name != null) ValidateItemName(item_name);
+            if (item_description != null)  ValidateItemDescription(item_description);
+            if (default_replacement_period != null)  ValidateDefaultReplacementPeriod(default_replacement_period);
 
-            if (!string.IsNullOrWhiteSpace(item_name)) { sql.Append(" item_name = @item_name,"); parameters.Add("item_name", item_name); }
-            if (default_replacement_period != null) { sql.Append(" default_replacement_period = @default_replacement_period,"); parameters.Add("default_replacement_period", default_replacement_period.Value); }
-            if (!string.IsNullOrWhiteSpace(item_description)) { sql.Append(" item_description = @item_description,"); parameters.Add("item_description", item_description); }
-
-            sql.Length--;
-            sql.Append(" WHERE id = @Id;");
-            parameters.Add("Id", id);
-
-            int rowsUpdated = await _data.SaveData(sql.ToString(), parameters, _connection);
-            return rowsUpdated > 0;
+            return _repository.UpdateData(id, item_name, default_replacement_period, item_description);
         }
-
 
         public async Task<bool> DeleteData(ItemTypeModel itemType)
         {
-            string sql = "DELETE FROM item_type WHERE id = @Id";
+            bool success = await _repository.DeleteData(itemType);
 
-            try
+            if (!success)
             {
-                int rowsDeleted = await _data.SaveData(sql, itemType, _connection);
-                return rowsDeleted > 0;
+                throw new InvalidOperationException("Wystąpił błąd podczas usuwania przedmiotu z bazy.");
             }
-            catch (MySqlException ex)
-            {
-                if (ex.Number == 1451) //Cannot delete or update a parent row"
-                {
-                    throw new InvalidOperationException("Nie można usunąć przedmiotów tego typu, ponieważ istnieją pracownicy wciaż go posiadający.");
-                }
-                throw;
-            }
+            return success;
         }
+
+        private bool ValidateItemName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("Nazwa przedmiotu musi zostać wprowadzona");
+            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9 ]{0,49}$"))
+            {
+                throw new Exception("Nazwa przedmiotu może zawierać jedynie litery, cyfry oraz być nie dłuższa niż 50 znaków.");
+            }
+            return true;
+        }
+
+        private bool ValidateDefaultReplacementPeriod(int? default_replacement_period)
+        {
+            if (default_replacement_period == null) throw new ArgumentNullException("Podaj domyśly okres zwrotu przedmiotu w dniach");
+            if (default_replacement_period <= 0)
+            {
+                throw new ArgumentOutOfRangeException("Czas zwrotu przedmiotu nie może być mniejszy bądź równy zero.");
+            }
+            return true;
+        }
+
+        private bool ValidateItemDescription(string description)
+        {
+            if (string.IsNullOrWhiteSpace(description))
+                throw new ArgumentNullException(nameof(description), "Opis przedmiotu musi zostać wprowadzony.");
+
+            if (description.Length > 100)
+            {
+                throw new ArgumentException("Opis przedmiotu może zawierać znaki specjalne, liczby, litery i nie może być dłuższy niż 100 znaków.");
+            }
+            return true;
+        }
+
+
+
 
     }
 
