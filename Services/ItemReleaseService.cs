@@ -1,86 +1,113 @@
 ﻿using Dapper;
 using DataLibrary;
 using MSOI.Models;
+using MSOI.Repositories;
 using MySql.Data.MySqlClient;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MSOI.Services
 {
-    public class ItemReleaseService
+    public class ItemReleaseService : IItemReleaseService
     {
 
-        private readonly IDataAccess _data;
-        private readonly string _connection;
+        private readonly IItemReleaseRepository _repository;
 
-        public ItemReleaseService(IDataAccess data, IConfiguration connection)
+        public ItemReleaseService(IItemReleaseRepository repository)
         {
-            _data = data;
-            _connection = connection.GetConnectionString("default");
+            _repository = repository;
         }
+
 
         public async Task<List<ItemReleaseModel>> GetItemReleases(int? id = null, int? worker_id = null, int? item_type_id = null, string? size = null, string? color = null, DateTime? release_date = null, DateTime? exchange_date = null)
         {
-            var parameters = new DynamicParameters();
-            var sql = new StringBuilder("SELECT * FROM item_release WHERE 1=1");
+            List<ItemReleaseModel> itemReleaseModels = await _repository.GetItemReleases(id, worker_id, item_type_id, size, color, release_date, exchange_date);
 
-            if (id != null) { sql.Append(" AND id = @id"); parameters.Add("id", id); }
-            if (worker_id != null) { sql.Append(" AND worker_id = @worker_id"); parameters.Add("worker_id", worker_id); }
-            if (item_type_id != null) { sql.Append(" AND item_type_id = @item_type_id"); parameters.Add("item_type_id", item_type_id); }
-            if (!string.IsNullOrEmpty(size)) { sql.Append(" AND size LIKE @size"); parameters.Add("size", $"%{size}%"); }
-            if (!string.IsNullOrEmpty(color)) { sql.Append(" AND color LIKE @color"); parameters.Add("color", $"%{color}%"); }
-            if (release_date.HasValue) { sql.Append(" AND release_date = @release_date"); parameters.Add("release_date", release_date.Value.Date); }
-            if (exchange_date.HasValue) { sql.Append(" AND exchange_date = @exchange_date"); parameters.Add("exchange_date", exchange_date.Value.Date); }
-
-            return await _data.LoadData<ItemReleaseModel, dynamic>(sql.ToString(), parameters, _connection);
-        }
-
-
-        public async Task<bool> InsertReleaseItem(ItemReleaseModel itemType)
-        {
-            string sql = "INSERT INTO item_release (worker_id, item_type_id, size, color, release_date, exchange_date) VALUES (@worker_id, @item_type_id, @size, @color, @release_date, @exchange_date);";
-
-            int rowsInserted = await _data.SaveData(sql, itemType, _connection);
-            return rowsInserted > 0;
-        }
-
-        public async Task<bool> UpdateItemRelease(int id, int? worker_id = null, int? item_type_id = null, string? size = null, string? color = null, DateTime? release_date = null, DateTime? exchange_date = null)
-        {
-            var parameters = new DynamicParameters();
-            var sql = new StringBuilder("UPDATE item_release SET");
-
-            if (worker_id != null) { sql.Append(" worker_id = @worker_id,"); parameters.Add("worker_id", worker_id); }
-            if (item_type_id != null) { sql.Append(" item_type_id = @item_type_id,"); parameters.Add("item_type_id", item_type_id); }
-            if (!string.IsNullOrEmpty(size)) { sql.Append(" size = @size,"); parameters.Add("size", size); }
-            if (!string.IsNullOrEmpty(color)) { sql.Append(" color = @color,"); parameters.Add("color", color); }
-            if (release_date.HasValue) { sql.Append(" release_date = @release_date,"); parameters.Add("release_date", release_date.Value.Date); }
-            if (exchange_date.HasValue) { sql.Append(" exchange_date = @exchange_date,"); parameters.Add("exchange_date", exchange_date.Value.Date); }
-
-            sql.Length--;
-            sql.Append(" WHERE id = @Id;");
-            parameters.Add("Id", id);
-
-            int rowsUpdated = await _data.SaveData(sql.ToString(), parameters, _connection);
-            return rowsUpdated > 0;
-        }
-
-        public async Task<bool> DeleteData(ItemReleaseModel itemRelease)
-        {
-            string sql = "DELETE FROM item_release WHERE id = @Id";
-
-            try
+            if (itemReleaseModels == null || itemReleaseModels.Count == 0)
             {
-                int rowsDeleted = await _data.SaveData(sql, itemRelease, _connection);
-                return rowsDeleted > 0;
+                throw new Exception("Wystąpił błąd podczas pobierania danych z bazy na temat przedmiotów i ich właścicieli");
             }
-            catch (MySqlException ex)
+
+            return itemReleaseModels;
+
+        }
+
+        public Task<bool> InsertReleaseItem(ItemReleaseModel itemType)
+        {
+            ValidateId(itemType.Id);
+            ValidateId(itemType.Worker_id);
+            ValidateId(itemType.Item_type_id);
+            ValidateSize(itemType.Size);
+            ValidateColor(itemType.Color);
+            ValidateDates(itemType.Release_date, itemType.Exchange_date);
+
+            return _repository.InsertReleaseItem(itemType);
+        }
+
+        public Task<bool> UpdateItemRelease(int id, int? worker_id = null, int? item_type_id = null, string? size = null, string? color = null, DateTime? release_date = null, DateTime? exchange_date = null)
+        {
+            ValidateId(id);
+            if(worker_id != null) ValidateId(worker_id);
+            if (item_type_id != null)  ValidateId(item_type_id);
+            if (size != null)  ValidateSize(size);
+            if (color != null)  ValidateColor(color);
+            if (release_date.HasValue && exchange_date.HasValue) ValidateDates(release_date, exchange_date);
+
+            return _repository.UpdateItemRelease(id, worker_id, item_type_id, size, color, release_date, exchange_date);
+        }
+
+        public async Task<bool> DeleteData(int id)
+        {
+            bool succes = await _repository.DeleteData(id);
+            if (!succes) throw new InvalidOperationException("Nie udało sie usunąć powiązania między przedmiotem a przacownikiem.");
+            return succes;
+        }
+
+        private void ValidateId(int? id)
+        {
+            if (!id.HasValue || id <= 0)
             {
-                if (ex.Number == 1451) // <- tutaj nie może to wystąpić, ale na razie niech zostanie
-                {
-                    throw new InvalidOperationException("Nie można usunąć tego powiązania!");
-                }
-                throw;
+                throw new ArgumentException("Id musi być liczbą dodatnią.");
             }
         }
-          
+
+        private void ValidateSize(string size)
+        {
+            if (!string.IsNullOrEmpty(size) && !Regex.IsMatch(size, "^[a-zA-Z0-9]{1,10}$"))
+            {
+                throw new ArgumentException("Rozmiar może zawierać tylko litery i cyfry i mieć maksymalnie 10 znaków.");
+            }
+        }
+
+        private void ValidateColor(string color)
+        {
+            if (!string.IsNullOrEmpty(color) && !Regex.IsMatch(color, "^[a-zA-Z\\s-]{1,20}$"))
+            {
+                throw new ArgumentException("Kolor może zawierać tylko litery, spacje i myślniki, maksymalnie 20 znaków.");
+            }
+
+        }
+
+        private void ValidateDates(DateTime? release_date, DateTime? exchange_date)
+        {
+            if (release_date.HasValue && release_date > DateTime.Today)
+            {
+                throw new ArgumentException("Data wydania nie może być w przyszłości.");
+            }
+
+            if (exchange_date.HasValue && exchange_date > DateTime.Today)
+            {
+                throw new ArgumentException("Data wymiany nie może być w przyszłości.");
+            }
+
+            if (release_date.HasValue && exchange_date.HasValue && exchange_date < release_date)
+            {
+                throw new ArgumentException("Data wymiany nie może być wcześniejsza niż data wydania.");
+            }
+
+        }
+
+
     }
+
 }
