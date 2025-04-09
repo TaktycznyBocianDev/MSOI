@@ -18,7 +18,7 @@ namespace MSOI.Services
             _repository = repository;
         }
 
-
+         
         public async Task<List<ItemReleaseModel>> GetItemReleases(int? id = null, int? worker_id = null, int? item_type_id = null, string? size = null, string? color = null, DateTime? release_date = null, DateTime? exchange_date = null)
         {
             List<ItemReleaseModel> itemReleaseModels = await _repository.GetItemReleases(id, worker_id, item_type_id, size, color, release_date, exchange_date);
