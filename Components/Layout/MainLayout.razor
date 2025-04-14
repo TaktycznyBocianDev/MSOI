@@ -2,7 +2,7 @@
 
 @* Required *@
 <MudThemeProvider />
-@* <MudPopoverProvider />  *@
+@* <MudPopoverProvider /> *@
 
 @* Needed for dialogs *@
 <MudDialogProvider />
@@ -11,35 +11,28 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <!-- Pasek nawigacyjny -->
-    <MudAppBar Class="custom-appbar">
-        <MudText Typo="Typo.h5" Class="ml-4">SOI Manager</MudText>
-        <MudSpacer />
-    </MudAppBar>
-
-
-
-
-    <!-- Stały drawer -->
-    <MudDrawer Open="true" Anchor="Anchor.Start" Elevation="1" Variant="DrawerVariant.Persistent"
-    MiniVariantWidth="56px">
-        <MudNavMenu Class="mud-width-full px-3">
-            <MudText Typo="Typo.h6" Class="py-3 text-primary">Nawigacja</MudText>
-            <MudDivider Class="mb-2" />
-
-            <MudNavLink Href="/" Icon="@Icons.Material.Filled.Work" Color="Color.Primary">
-                Pracownicy
-            </MudNavLink>
-            <MudNavLink Href="/item-types" Icon="@Icons.Material.Filled.Category" Color="Color.Primary">
-                Przedmioty
-            </MudNavLink>
-        </MudNavMenu>
-    </MudDrawer>
-
-    <!-- Główna zawartość strony -->
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Style="width: 100%; max-width: 100%;">
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Style="width: 100%; max-width: 100%; padding-bottom: 80px;">
             @Body
         </MudContainer>
     </MudMainContent>
+
+    <MudAppBar Style="background-color: #2E7D32; color: #FFFFFF;" Fixed="true" Bottom="true" Elevation="6">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="d-flex justify-space-around align-center">
+            <MudButton Variant="Variant.Filled"
+                       Size="Size.Large"
+                       Style="color: #A5D6A7; padding: 12px 24px; font-size: 1.2rem;"
+                       StartIcon="@Icons.Material.Filled.Group"
+                       Href="/workers">
+                Pracownicy
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Size="Size.Large"
+                       Style="color: #A5D6A7; padding: 12px 24px; font-size: 1.2rem;"
+                       StartIcon="@Icons.Material.Filled.Inventory2"
+                       Href="/item-types">
+                Przedmioty
+            </MudButton>
+        </MudContainer>
+    </MudAppBar>
 </MudLayout>

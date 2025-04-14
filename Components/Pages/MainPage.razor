@@ -1,0 +1,31 @@
+﻿@page "/"
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="pa-0" Style="min-height: 100vh; background: linear-gradient(to bottom right, #f9f9f9, #e0e0e0);">
+    <MudGrid Justify="Justify.Center" AlignItems="AlignItems.Center" Style="min-height: 100vh;">
+        <MudItem xs="12" sm="10" md="8" lg="6" xl="5">
+            <MudPaper Elevation="1" Class="pa-8 d-flex flex-column align-center text-center" Style="border-radius: 16px;">
+
+                <!-- Logo i tytuł -->
+                <div class="d-flex flex-column align-center mb-6">
+                    <MudImage Src="images/logo.png" Alt="SOI Manager Logo" Width="160" Height="160" Class="mb-4" />
+                    <MudText Typo="Typo.h2" Class="font-weight-bold">SOI Manager</MudText>
+                </div>
+
+                <!-- Opis aplikacji -->
+                <MudText Typo="Typo.subtitle1" Class="mb-2" Color="Color.Dark">
+                    Zarządzaj przedmiotami i pracownikami w łatwy sposób.
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Class="mb-2" Color="Color.Dark">
+                    Intuicyjny interfejs oparty o Blazor i MudBlazor.
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Class="mb-2" Color="Color.Dark">
+                    Przeglądaj, edytuj i przypisuj przedmioty.
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Class="mb-0" Color="Color.Dark">
+                    Sprawdź, co SOI Manager może zrobić dla Twojej organizacji.
+                </MudText>
+
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

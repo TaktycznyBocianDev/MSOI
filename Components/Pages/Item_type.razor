@@ -1,14 +1,15 @@
 ﻿@page "/item-types"
 @using MSOI.Models
-@using MSOI.Services
-@inject ItemTypeService ItemTypeService
+@using MSOI.Services;
+@using MSOI.Services.ServiceImplementation
+@inject IItemTypeService ItemTypeService
 
 <h3>Typy Przedmiotów</h3>
 
 <!-- Przycisk do odświeżenia listy typów przedmiotów -->
 <button class="btn btn-primary" @onclick="LoadItemTypes">Odśwież listę</button>
 
-<hr />
+<hr /> 
 
 <h4>Dodaj nowy typ przedmiotu</h4>
 <div class="mb-3">

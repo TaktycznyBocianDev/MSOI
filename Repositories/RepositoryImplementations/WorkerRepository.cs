@@ -4,7 +4,7 @@ using MSOI.Models;
 using MySql.Data.MySqlClient;
 using System.Text;
 
-namespace MSOI.Repositories
+namespace MSOI.Repositories.RepositoryImplementations
 {
     public class WorkerRepository : IWorkerRepository
     {

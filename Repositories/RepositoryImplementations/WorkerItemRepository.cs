@@ -1,16 +1,14 @@
-﻿using Dapper;
-using DataLibrary;
+﻿using DataLibrary;
 using MSOI.Models;
-using System.Text;
 
-namespace MSOI.Services
+namespace MSOI.Repositories.RepositoryImplementations
 {
-    public class WorkerItemService
+    public class WorkerItemRepository : IWorkerItemRepository
     {
         private readonly IDataAccess _data;
         private readonly string _connection;
 
-        public WorkerItemService(IDataAccess data, IConfiguration connection)
+        public WorkerItemRepository(IDataAccess data, IConfiguration connection)
         {
             _data = data;
             _connection = connection.GetConnectionString("default");

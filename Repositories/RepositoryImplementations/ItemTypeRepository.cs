@@ -4,7 +4,7 @@ using MSOI.Models;
 using MySql.Data.MySqlClient;
 using System.Text;
 
-namespace MSOI.Repositories
+namespace MSOI.Repositories.RepositoryImplementations
 {
     public class ItemTypeRepository : IItemTypeRepository
     {
@@ -62,7 +62,7 @@ namespace MSOI.Repositories
         public async Task<bool> DeleteData(ItemTypeModel itemType)
         {
             string sql = "DELETE FROM item_type WHERE id = @Id";
-            var parameters = new { Id = itemType.Id };
+            var parameters = new { itemType.Id };
 
             try
             {

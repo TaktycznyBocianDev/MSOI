@@ -2,19 +2,20 @@
 using DataLibrary;
 using MSOI.Models;
 using MSOI.Repositories;
+using MSOI.Repositories.RepositoryImplementations;
 using MySql.Data.MySqlClient;
 using System.Data.Common;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-namespace MSOI.Services
+namespace MSOI.Services.ServiceImplementation
 {
-    public class ItemTypeService : IItemService
+    public class ItemTypeService : IItemTypeService
     {
 
-        private readonly ItemTypeRepository _repository;
-        public ItemTypeService(ItemTypeRepository repository)
+        private readonly IItemTypeRepository _repository;
+        public ItemTypeService(IItemTypeRepository repository)
         {
             _repository = repository;
         }
@@ -44,8 +45,8 @@ namespace MSOI.Services
         public Task<bool> UpdateData(int id, string? item_name = null, int? default_replacement_period = null, string? item_description = null)
         {
             if (item_name != null) ValidateItemName(item_name);
-            if (item_description != null)  ValidateItemDescription(item_description);
-            if (default_replacement_period != null)  ValidateDefaultReplacementPeriod(default_replacement_period);
+            if (item_description != null) ValidateItemDescription(item_description);
+            if (default_replacement_period != null) ValidateDefaultReplacementPeriod(default_replacement_period);
 
             return _repository.UpdateData(id, item_name, default_replacement_period, item_description);
         }
@@ -64,7 +65,7 @@ namespace MSOI.Services
         private bool ValidateItemName(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("Nazwa przedmiotu musi zostać wprowadzona");
-            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9 ]{0,49}$"))
+            if (!Regex.IsMatch(name, @"^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9 ]{0,49}$"))
             {
                 throw new Exception("Nazwa przedmiotu może zawierać jedynie litery, cyfry oraz być nie dłuższa niż 50 znaków.");
             }

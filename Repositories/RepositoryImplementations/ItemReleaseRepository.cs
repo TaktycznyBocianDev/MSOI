@@ -5,7 +5,7 @@ using MySql.Data.MySqlClient;
 using System.Reflection.Metadata;
 using System.Text;
 
-namespace MSOI.Repositories
+namespace MSOI.Repositories.RepositoryImplementations
 {
     public class ItemReleaseRepository : IItemReleaseRepository
     {

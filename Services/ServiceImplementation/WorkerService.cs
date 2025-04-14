@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
-namespace MSOI.Services
+namespace MSOI.Services.ServiceImplementation
 {
     public class WorkerService : IWorkerService
     {
@@ -51,11 +51,11 @@ namespace MSOI.Services
 
         public async Task<bool> UpdateWorker(int id, string? name = null, string? surname = null, string? position = null, DateTime? employment_date = null, string? pesel = null)
         {
-            if(name !=null) ValidateName(name);
-            if(surname != null) ValidateSurname(surname);
-            if(position != null) ValidatePosition(position);
-            if(employment_date != null) ValidateEmploymentDate(employment_date);
-            if(pesel != null) ValidatePesel(pesel);
+            if (name != null) ValidateName(name);
+            if (surname != null) ValidateSurname(surname);
+            if (position != null) ValidatePosition(position);
+            if (employment_date != null) ValidateEmploymentDate(employment_date);
+            if (pesel != null) ValidatePesel(pesel);
 
             return await _workerRepository.UpdateData(id, name, surname, position, employment_date, pesel);
         }
@@ -78,7 +78,7 @@ namespace MSOI.Services
             {
                 throw new ArgumentNullException("Imie pracownika nie zostało wprowadzone");
             }
-            if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{1,49}$"))
+            if (!Regex.IsMatch(name, @"^[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{1,49}$"))
             {
                 throw new Exception("Imie musi zaczynać się wielką literą, zawierać tylko litery (dopuszcza się polskie znaki) oraz maksymalnie długie na 50 znaków.");
             }
@@ -90,7 +90,7 @@ namespace MSOI.Services
             {
                 throw new ArgumentNullException("Imie pracownika nie zostało wprowadzone");
             }
-            if (!System.Text.RegularExpressions.Regex.IsMatch(surname, @"^[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{1,49}(-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{1,49})?$"))
+            if (!Regex.IsMatch(surname, @"^[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{1,49}(-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{1,49})?$"))
             {
                 throw new Exception("Nazwisko musi zaczynać się wielką literą, zawierać tylko litery (dopuszcza się polskie znaki oraz myślik dla nazwisk dwuczłonowych) oraz może być maksymalnie długie na 50 znaków.");
             }
@@ -102,7 +102,7 @@ namespace MSOI.Services
             {
                 throw new ArgumentNullException("Pozycja pracownika musi zostać wprowadzona");
             }
-            if (!System.Text.RegularExpressions.Regex.IsMatch(position, @"^[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż ]{1,49}$"))
+            if (!Regex.IsMatch(position, @"^[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż ]{1,49}$"))
             {
                 throw new Exception("Pozycja pracownika nie może zawierać cyfr ani znakow specjalncych innych poza spacją.");
             }
@@ -143,7 +143,7 @@ namespace MSOI.Services
                 sum += peselDigits[i] * weights[i];
             }
 
-            int controlDigit = (10 - (sum % 10)) % 10;
+            int controlDigit = (10 - sum % 10) % 10;
 
             if (controlDigit != peselDigits[10])
             {

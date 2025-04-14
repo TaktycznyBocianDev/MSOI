@@ -6,7 +6,7 @@ using MySql.Data.MySqlClient;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MSOI.Services
+namespace MSOI.Services.ServiceImplementation
 {
     public class ItemReleaseService : IItemReleaseService
     {
@@ -18,7 +18,7 @@ namespace MSOI.Services
             _repository = repository;
         }
 
-         
+
         public async Task<List<ItemReleaseModel>> GetItemReleases(int? id = null, int? worker_id = null, int? item_type_id = null, string? size = null, string? color = null, DateTime? release_date = null, DateTime? exchange_date = null)
         {
             List<ItemReleaseModel> itemReleaseModels = await _repository.GetItemReleases(id, worker_id, item_type_id, size, color, release_date, exchange_date);
@@ -47,10 +47,10 @@ namespace MSOI.Services
         public Task<bool> UpdateItemRelease(int id, int? worker_id = null, int? item_type_id = null, string? size = null, string? color = null, DateTime? release_date = null, DateTime? exchange_date = null)
         {
             ValidateId(id);
-            if(worker_id != null) ValidateId(worker_id);
-            if (item_type_id != null)  ValidateId(item_type_id);
-            if (size != null)  ValidateSize(size);
-            if (color != null)  ValidateColor(color);
+            if (worker_id != null) ValidateId(worker_id);
+            if (item_type_id != null) ValidateId(item_type_id);
+            if (size != null) ValidateSize(size);
+            if (color != null) ValidateColor(color);
             if (release_date.HasValue && exchange_date.HasValue) ValidateDates(release_date, exchange_date);
 
             return _repository.UpdateItemRelease(id, worker_id, item_type_id, size, color, release_date, exchange_date);

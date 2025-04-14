@@ -2,7 +2,7 @@
 
 namespace MSOI.Services
 {
-    public interface IItemService
+    public interface IItemTypeService
     {
 
         public Task<List<ItemTypeModel>> GetItemTypes(int? id = null, string? item_name = null, int? default_replacement_period = null, string? item_description = null);
