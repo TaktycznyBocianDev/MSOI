@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/workers"
 @using MSOI.Models
 @using MSOI.Services;
 @using MSOI.Services.ServiceImplementation
@@ -40,7 +40,7 @@
                     <MudTd DataLabel="Nazwisko">@context.Worker_surname</MudTd>
                     <MudTd DataLabel="PESEL">@context.Pesel</MudTd>
                     <MudTd DataLabel="Stanowisko">@context.Position</MudTd>
-                    <MudTd DataLabel="Data zatrudnienia">@context.Employment_date.ToString("dd.MM.yyyy")</MudTd>
+                    <MudTd DataLabel="Data zatrudnienia">@context.Employment_date?.ToString("dd.MM.yyyy")</MudTd>
                     <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small" /></MudTd>
                 </RowTemplate>
             </MudTable>
