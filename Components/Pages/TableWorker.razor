@@ -157,6 +157,12 @@
         var dialog = await DialogService.ShowAsync<EditWorkerDialog>("Edycja Pracownika", parameters);
         var result = await dialog.Result;
 
+        if (result != null && !result.Canceled)
+        {
+            await SearchWorkers();
+        }
+
+
         // var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         // await DialogService.ShowAsync<EditWorkerDialog>("Edytuj pracownika", parameters, options);
     }

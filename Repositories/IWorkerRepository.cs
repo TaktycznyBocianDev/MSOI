@@ -9,7 +9,7 @@ namespace MSOI.Repositories
     {
 
         public Task<List<WorkerModel>> GetWorkers(int? id = null, string? name = null, string? surname = null, string? position = null, DateTime? employment_date = null, string? pesel = null);
-        public Task<bool> DoPeselExist(string pesel);
+        public Task<bool> DoPeselExistForAnotherWorker(string pesel, int? id = null);
         public Task<bool> InsertData(WorkerModel worker);
         public Task<bool> UpdateData(int id, string? name = null, string? surname = null, string? position = null, DateTime? employment_date = null, string? pesel = null);
         public Task<bool> DeleteData(int id);

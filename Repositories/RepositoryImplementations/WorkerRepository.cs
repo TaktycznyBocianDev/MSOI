@@ -83,6 +83,14 @@ namespace MSOI.Repositories.RepositoryImplementations
                         parameters.Add("Id", id);
 
                         int rowsUpdated = await _data.SaveData(sql.ToString(), parameters, _connection, transaction);
+
+                        if (rowsUpdated == 0)
+                        {
+                            Console.WriteLine("No changes");
+                        }
+
+                        await transaction.CommitAsync();
+
                         return rowsUpdated > 0;
                     }
                     catch
@@ -132,10 +140,19 @@ namespace MSOI.Repositories.RepositoryImplementations
         /// </summary>
         /// <param name="pesel"></param>
         /// <returns></returns>
-        public async Task<bool> DoPeselExist(string pesel)
+        public async Task<bool> DoPeselExistForAnotherWorker(string pesel, int? id = null)
         {
-            string sql = "SELECT EXISTS(SELECT 1 FROM workers WHERE pesel = @Pesel);";
-            return await _data.ExecuteScalarAsync<bool, dynamic>(sql, new { Pesel = pesel }, _connection);
+            string sql = "SELECT COUNT(*) FROM workers WHERE pesel = @pesel";
+
+            if (id != null)
+            {
+                sql += " AND id != @id";
+            }
+
+            sql += ";";
+
+            int count = await _data.ExecuteScalarAsync<int, dynamic>(sql, new { Pesel = pesel, Id = id }, _connection);
+            return count > 0;
         }
 
 

@@ -44,7 +44,7 @@ namespace MSOI.Services.ServiceImplementation
             ValidateSurname(worker.Worker_surname);
             ValidatePosition(worker.Position);
             ValidateEmploymentDate(worker.Employment_date);
-            ValidatePesel(worker.Pesel);
+            await ValidatePesel(worker.Pesel);
 
             return await _workerRepository.InsertData(worker);
         }
@@ -55,7 +55,7 @@ namespace MSOI.Services.ServiceImplementation
             if (surname != null) ValidateSurname(surname);
             if (position != null) ValidatePosition(position);
             if (employment_date != null) ValidateEmploymentDate(employment_date);
-            if (pesel != null) ValidatePesel(pesel);
+            if (pesel != null) await ValidatePesel(pesel, id);
 
             return await _workerRepository.UpdateData(id, name, surname, position, employment_date, pesel);
         }
@@ -122,7 +122,7 @@ namespace MSOI.Services.ServiceImplementation
 
         }
 
-        private async Task ValidatePesel(string pesel)
+        private async Task ValidatePesel(string pesel, int? id = null)
         {
             if (string.IsNullOrWhiteSpace(pesel))
             {
@@ -150,7 +150,7 @@ namespace MSOI.Services.ServiceImplementation
                 throw new ArgumentException("Podano błędny PESEL – nie zgadza się cyfra kontrolna.", nameof(pesel));
             }
 
-            bool doPeselExist = await _workerRepository.DoPeselExist(pesel);
+            bool doPeselExist = await _workerRepository.DoPeselExistForAnotherWorker(pesel, id);
             if (doPeselExist)
             {
                 throw new InvalidOperationException("Pracownik z takim PESEL jest już zapisany w bazie.");
