@@ -5,13 +5,15 @@
 
 @inject IWorkerService WorkerService
 @inject IWorkerItemService WorkerItemService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <MudContainer Style="width: 100%; max-width: 100%;">
     <MudGrid>
         <!-- Lewa sekcja: Lista Pracowników -->
         <MudItem xs="12" md="7">
             <MudTable T="WorkerModel" Items="@workers" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTable" Style="width: 100%;"
-                      RowClass="cursor-pointer" OnRowClick="RowClickEvent">
+            RowClass="cursor-pointer" OnRowClick="RowClickEvent">
                 <ToolBarContent>
                     <MudGrid>
                         <MudItem xs="12" md="6">
@@ -19,9 +21,9 @@
                         </MudItem>
                         <MudItem xs="12" md="6">
                             <MudTextField T="string" ValueChanged="@(s=>SetWorkerName(s))" Placeholder="Wyszukaj: imie" Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                            AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                             <MudTextField T="string" ValueChanged="@(s=>SetPesel(s))" Placeholder="Wyszukaj: PESEL" Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                            AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                         </MudItem>
                     </MudGrid>
                 </ToolBarContent>
@@ -41,7 +43,7 @@
                     <MudTd DataLabel="PESEL">@context.Pesel</MudTd>
                     <MudTd DataLabel="Stanowisko">@context.Position</MudTd>
                     <MudTd DataLabel="Data zatrudnienia">@context.Employment_date?.ToString("dd.MM.yyyy")</MudTd>
-                    <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small" /></MudTd>
+                    <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small" OnClick="() => OpenEditWorkerDialog(context)" /></MudTd>
                 </RowTemplate>
             </MudTable>
         </MudItem>
@@ -58,7 +60,7 @@
             else
             {
                 <MudTable T="WorkerItemDTO" Items="@workerItems" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTableItems" Style="width: 100%;" Dense="true"
-                          RowClass="cursor-pointer" OnRowClick="RowClickEventItems">
+                RowClass="cursor-pointer" OnRowClick="RowClickEventItems">
                     <ToolBarContent>
                         <MudGrid>
                             <MudItem xs="12" md="6">
@@ -87,6 +89,12 @@
         </MudItem>
     </MudGrid>
 </MudContainer>
+
+<style>
+    .my-custom-class {
+    backdrop-filter: blur(10px);
+    }
+</style>
 
 
 @code
@@ -142,6 +150,15 @@
         ShowItems(args.Item.Id);
     }
 
+    private async Task OpenEditWorkerDialog(WorkerModel worker)
+    {
+        var parameters = new DialogParameters<EditWorkerDialog> { { x => x.EditWorker, worker } };
 
+        var dialog = await DialogService.ShowAsync<EditWorkerDialog>("Edycja Pracownika", parameters);
+        var result = await dialog.Result;
+
+        // var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        // await DialogService.ShowAsync<EditWorkerDialog>("Edytuj pracownika", parameters, options);
+    }
 
 }

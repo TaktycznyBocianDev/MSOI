@@ -1,0 +1,47 @@
+﻿@using MSOI.Models
+@using MSOI.Services
+@using MudBlazor
+
+@inject IWorkerService WorkerService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h5">Edycja pracownika</MudText>
+        <MudTextField @bind-Value="EditWorker.Worker_name" Label="Imię" Required="true" />
+        <MudTextField @bind-Value="EditWorker.Worker_surname" Label="Nazwisko" Required="true" />
+        <MudTextField @bind-Value="EditWorker.Pesel" Label="PESEL" Required="true" />
+        <MudTextField @bind-Value="EditWorker.Position" Label="Stanowisko" />
+        <MudDatePicker Label="Data zatrudnienia" @bind-Date="EditWorker.Employment_date" />
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">Edytuj</MudButton>
+        <MudButton OnClick="Cancel">Anuluj</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public WorkerModel EditWorker { get; set; } = new();
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        try
+        {
+            await WorkerService.UpdateWorker(EditWorker.Id, EditWorker.Worker_name, EditWorker.Worker_surname, EditWorker.Position, EditWorker.Employment_date, EditWorker.Pesel);
+            Snackbar.Add("Pracownik zmodyfikowany", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(EditWorker));
+        }
+        catch (ObjectDisposedException)
+        {
+            Snackbar.Add("Edycja nie powiodła sie", Severity.Error);
+        }
+    }
+
+
+}
