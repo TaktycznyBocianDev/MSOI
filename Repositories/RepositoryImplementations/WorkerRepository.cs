@@ -117,6 +117,7 @@ namespace MSOI.Repositories.RepositoryImplementations
                     try
                     {
                         int rowsDeleted = await _data.SaveData(sql, new { Id = id }, _connection, transaction);
+                        await transaction.CommitAsync();
                         return rowsDeleted > 0;
                     }
                     catch (MySqlException ex)

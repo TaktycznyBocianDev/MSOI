@@ -1,4 +1,5 @@
 ﻿@page "/workers"
+@using MSOI.Components.Dialogs
 @using MSOI.Models
 @using MSOI.Services;
 @using MSOI.Services.ServiceImplementation
@@ -13,19 +14,34 @@
         <!-- Lewa sekcja: Lista Pracowników -->
         <MudItem xs="12" md="7">
             <MudTable T="WorkerModel" Items="@workers" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTable" Style="width: 100%;"
-            RowClass="cursor-pointer" OnRowClick="RowClickEvent">
+                      RowClass="cursor-pointer" OnRowClick="RowClickEvent">
                 <ToolBarContent>
                     <MudGrid>
+
+                         <MudItem xs="12" md="6">
+                            <MudText Typo="Typo.h2" Class="mb-2">Pracownicy</MudText>
+                         </MudItem>
+
                         <MudItem xs="12" md="6">
-                            <MudText Typo="Typo.h3">Pracownicy</MudText>
+                            <MudTextField T="string" ValueChanged="@(s=>SetWorkerName(s))" Placeholder="Wyszukaj: imie" Adornment="Adornment.Start" Clearable="true"
+                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                            <MudTextField T="string" ValueChanged="@(s=>SetSurname(s))" Placeholder="Wyszukaj: Nazwisko" Adornment="Adornment.Start" Clearable="true"
+                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                            <MudTextField T="string" ValueChanged="@(s=>SetPesel(s))" Placeholder="Wyszukaj: PESEL" Adornment="Adornment.Start" Clearable="true"
+                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                         </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField T="string" ValueChanged="@(s=>SetWorkerName(s))" Placeholder="Wyszukaj: imie" Adornment="Adornment.Start"
-                            AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                            <MudTextField T="string" ValueChanged="@(s=>SetPesel(s))" Placeholder="Wyszukaj: PESEL" Adornment="Adornment.Start"
-                            AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+
+                        <MudItem xs="12">
+                            <MudButton Icon="@Icons.Material.Filled.Add"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Success"
+                                       FullWidth="true"
+                                       Style="padding: 12px; font-size: 1rem;"
+                                       OnClick="() => OpenAddWorkerDialog()">
+                                Dodaj pracownika
+                            </MudButton>
                         </MudItem>
-                    </MudGrid>
+                     </MudGrid>
                 </ToolBarContent>
                 <HeaderContent>
                     <MudTh>Nr</MudTh>
@@ -44,6 +60,7 @@
                     <MudTd DataLabel="Stanowisko">@context.Position</MudTd>
                     <MudTd DataLabel="Data zatrudnienia">@context.Employment_date?.ToString("dd.MM.yyyy")</MudTd>
                     <MudTd><MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small" OnClick="() => OpenEditWorkerDialog(context)" /></MudTd>
+                    <MudTd><MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" OnClick="() => OpenDeleteWorkerDialog(context)" /></MudTd>
                 </RowTemplate>
             </MudTable>
         </MudItem>
@@ -60,7 +77,7 @@
             else
             {
                 <MudTable T="WorkerItemDTO" Items="@workerItems" Hover="true" Breakpoint="Breakpoint.Sm" @ref="mudTableItems" Style="width: 100%;" Dense="true"
-                RowClass="cursor-pointer" OnRowClick="RowClickEventItems">
+                          RowClass="cursor-pointer" OnRowClick="RowClickEventItems">
                     <ToolBarContent>
                         <MudGrid>
                             <MudItem xs="12" md="6">
@@ -92,7 +109,7 @@
 
 <style>
     .my-custom-class {
-    backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
     }
 </style>
 
@@ -109,6 +126,7 @@
 
     private string workerName;
     private string pesel;
+    private string workerSurname;
 
 
 
@@ -129,9 +147,15 @@
         await SearchWorkers();
     }
 
+    private async Task SetSurname(string workerSurname)
+    {
+        this.workerSurname = workerSurname;
+        await SearchWorkers();
+    }
+
     public async Task SearchWorkers()
     {
-        workers = await WorkerService.GetWorkers(name: workerName, pesel: pesel);
+        workers = await WorkerService.GetWorkers(name: workerName, pesel: pesel, surname: workerSurname);
     }
 
     public async Task ShowItems(int id)
@@ -154,7 +178,7 @@
     {
         var parameters = new DialogParameters<EditWorkerDialog> { { x => x.EditWorker, worker } };
 
-        var dialog = await DialogService.ShowAsync<EditWorkerDialog>("Edycja Pracownika", parameters);
+        var dialog = await DialogService.ShowAsync<EditWorkerDialog>("", parameters);
         var result = await dialog.Result;
 
         if (result != null && !result.Canceled)
@@ -162,9 +186,33 @@
             await SearchWorkers();
         }
 
+    }
 
-        // var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        // await DialogService.ShowAsync<EditWorkerDialog>("Edytuj pracownika", parameters, options);
+    private async Task OpenAddWorkerDialog()
+    {
+        var dialog = await DialogService.ShowAsync<CreateWorkerDialog>();
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await SearchWorkers();
+        }
+
+    }
+
+
+    private async Task OpenDeleteWorkerDialog(WorkerModel worker)
+    {
+        var parameters = new DialogParameters<DeleteWorkerDialog> { { x => x.DeleteWorker, worker } };
+
+        var dialog = await DialogService.ShowAsync<DeleteWorkerDialog>("", parameters);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await SearchWorkers();
+        }
+
     }
 
 }

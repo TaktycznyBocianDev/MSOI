@@ -1,0 +1,65 @@
+﻿@using MSOI.Models
+@using MSOI.Services
+@using MudBlazor
+
+@inject IWorkerService WorkerService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.h5" Class="text-error">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-2" Color="Color.Error" />
+                Potwierdzenie usunięcia
+            </MudText>
+
+            <MudText Typo="Typo.subtitle1">
+                Czy na pewno chcesz usunąć pracownika
+                <b>@DeleteWorker.Worker_name @DeleteWorker.Worker_surname</b>?
+            </MudText>
+
+            <MudText Typo="Typo.caption" Color="Color.Error">
+                Tej operacji nie można cofnąć.
+            </MudText>
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="Submit" StartIcon="@Icons.Material.Filled.Delete">
+            Usuń
+        </MudButton>
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="Cancel">
+            Anuluj
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public WorkerModel DeleteWorker { get; set; } = new();
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        try
+        {
+            await WorkerService.DeleteWorker(DeleteWorker.Id);
+            Snackbar.Add("Pracownik został usunięty.", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(DeleteWorker));
+        }
+        catch (InvalidOperationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Wystąpił nieoczekiwany błąd podczas usuwania pracownika.", Severity.Error);
+        }
+    }
+
+
+
+}

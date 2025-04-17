@@ -102,7 +102,7 @@ namespace MSOI.Services.ServiceImplementation
             {
                 throw new ArgumentNullException("Pozycja pracownika musi zostać wprowadzona");
             }
-            if (!Regex.IsMatch(position, @"^[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż ]{1,49}$"))
+            if (!Regex.IsMatch(position, @"^[A-ZĄĆĘŁŃÓŚŹŻa-ząćęłńóśźż ]{2,50}$"))
             {
                 throw new Exception("Pozycja pracownika nie może zawierać cyfr ani znakow specjalncych innych poza spacją.");
             }
